@@ -7,5 +7,5 @@
 /dataSources/
 /dataSources.local.xml
 .idea/
-/test/test_py/*.py
+/test/init_data/test_data/test_py/
 

@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1716</width>
+    <height>865</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>IndexPage</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QSplitter" name="splitter_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QTreeView" name="file_tree_view"/>
+      <widget class="QSplitter" name="splitter">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <widget class="QTabWidget" name="text_editor">
+        <property name="tabsClosable">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QTabWidget" name="show_tab_widget">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="tab">
+         <property name="font">
+          <font>
+           <family>Microsoft YaHei UI</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <attribute name="title">
+          <string>输出</string>
+         </attribute>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QTreeWidget" name="show_tree_widget">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QTreeView::branch:closed:has-children
+{
+    image: url(./resource/icon/expand-positive.png);/*图标*/
+    border-image: none;
+}
+
+QTreeView::branch:open:has-children
+{
+    image: url(./resource/icon/shrink-positive.png);/*图标*/
+    border-image: none;
+}</string>
+            </property>
+            <column>
+             <property name="text">
+              <string>文件名</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>行数</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>名称</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>风险水平</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>解决方式</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_2">
+         <property name="font">
+          <font>
+           <family>Microsoft YaHei UI</family>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <attribute name="title">
+          <string>终端</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QTextEdit" name="terminal_c">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="input_bash"/>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QTreeWidget" name="info_tree_widget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QTreeView::branch:closed:has-children
+{
+    image: url(./resource/icon/expand-positive.png);/*图标*/
+    border-image: none;
+}
+
+QTreeView::branch:open:has-children
+{
+    image: url(./resource/icon/shrink-positive.png);/*图标*/
+    border-image: none;
+}</string>
+       </property>
+       <attribute name="headerMinimumSectionSize">
+        <number>30</number>
+       </attribute>
+       <attribute name="headerDefaultSectionSize">
+        <number>110</number>
+       </attribute>
+       <attribute name="headerHighlightSections">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>函数和变量</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>类型</string>
+        </property>
+       </column>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="backto">
+      <property name="maximumSize">
+       <size>
+        <width>40</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1716</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="file_manager">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="open"/>
+    <addaction name="new_file"/>
+    <addaction name="save"/>
+    <addaction name="save_as"/>
+    <addaction name="separator"/>
+    <addaction name="remove"/>
+    <addaction name="close_tab"/>
+    <addaction name="close_tabs"/>
+   </widget>
+   <widget class="QMenu" name="text_operator">
+    <property name="title">
+     <string>编辑</string>
+    </property>
+    <addaction name="undo"/>
+    <addaction name="copy"/>
+    <addaction name="cut"/>
+    <addaction name="paste"/>
+    <addaction name="separator"/>
+    <addaction name="definition"/>
+   </widget>
+   <widget class="QMenu" name="func">
+    <property name="title">
+     <string>窗口</string>
+    </property>
+    <addaction name="fun_manager"/>
+    <addaction name="search_replace"/>
+    <addaction name="separator"/>
+    <addaction name="generate_img"/>
+    <addaction name="generate_report"/>
+    <addaction name="separator"/>
+    <addaction name="terminal"/>
+   </widget>
+   <widget class="QMenu" name="c_operator">
+    <property name="title">
+     <string>调试</string>
+    </property>
+    <addaction name="compiler_c"/>
+    <addaction name="separator"/>
+    <addaction name="run_c"/>
+    <addaction name="separator"/>
+    <addaction name="compile_run_c"/>
+   </widget>
+   <addaction name="file_manager"/>
+   <addaction name="text_operator"/>
+   <addaction name="func"/>
+   <addaction name="c_operator"/>
+  </widget>
+  <action name="open">
+   <property name="text">
+    <string>打开文件</string>
+   </property>
+  </action>
+  <action name="save">
+   <property name="text">
+    <string>保存</string>
+   </property>
+  </action>
+  <action name="save_as">
+   <property name="text">
+    <string>另存为</string>
+   </property>
+  </action>
+  <action name="close_tab">
+   <property name="text">
+    <string>关闭标签</string>
+   </property>
+  </action>
+  <action name="close_tabs">
+   <property name="text">
+    <string>关闭所有标签</string>
+   </property>
+  </action>
+  <action name="undo">
+   <property name="text">
+    <string>撤销</string>
+   </property>
+  </action>
+  <action name="copy">
+   <property name="text">
+    <string>复制</string>
+   </property>
+  </action>
+  <action name="cut">
+   <property name="text">
+    <string>剪切</string>
+   </property>
+  </action>
+  <action name="paste">
+   <property name="text">
+    <string>粘贴</string>
+   </property>
+  </action>
+  <action name="definition">
+   <property name="text">
+    <string>转到定义</string>
+   </property>
+  </action>
+  <action name="fun_manager">
+   <property name="text">
+    <string>风险函数管理窗口</string>
+   </property>
+  </action>
+  <action name="search_replace">
+   <property name="text">
+    <string>查找和替换</string>
+   </property>
+  </action>
+  <action name="generate_img">
+   <property name="text">
+    <string>生成饼状图</string>
+   </property>
+  </action>
+  <action name="generate_report">
+   <property name="text">
+    <string>导出报告</string>
+   </property>
+  </action>
+  <action name="terminal">
+   <property name="text">
+    <string>终端</string>
+   </property>
+  </action>
+  <action name="compiler_c">
+   <property name="text">
+    <string>编译</string>
+   </property>
+  </action>
+  <action name="run_c">
+   <property name="text">
+    <string>运行</string>
+   </property>
+  </action>
+  <action name="new_file">
+   <property name="text">
+    <string>新建文件</string>
+   </property>
+  </action>
+  <action name="compile_run_c">
+   <property name="text">
+    <string>编译运行</string>
+   </property>
+  </action>
+  <action name="remove">
+   <property name="text">
+    <string>删除</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

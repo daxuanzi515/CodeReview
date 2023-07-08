@@ -23,15 +23,14 @@ class DangerManagerWindow(QDialog):
         self.smaller_pixmap = self.pixmap.scaled(24, 24)  # 将图像调整为24*24的尺寸
         self.setWindowIcon(QIcon(self.ui_icon))
         # 设置风格
-        self.set_All_Style()
+        self.setAllStyle()
 
         # 获取表头
         header = self.ui.database.horizontalHeader()
 
         # 设置调整模式为Stretch，即按比例拉伸
         header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        #
-        # # 设置特定列的相对宽度
+        # 设置特定列的相对宽度
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)  # 第一列根据内容自动调整宽度
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.Interactive)
         header.setStretchLastSection(True)  # 最后一列填充剩余空间
@@ -40,12 +39,15 @@ class DangerManagerWindow(QDialog):
 
 
     def removeData(self, data):
+        # TODO
         pass
 
     def addData(self, data):
+        # TODO
         pass
 
-    def set_All_Style(self):
+    def setAllStyle(self):
+        # TODO
         pass
 
     # 重写

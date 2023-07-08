@@ -223,7 +223,7 @@ class MeLexer(QsciLexerCustom):
         self.setDefaultPaper(QColor("#CCE8CF"))  # 背景 豆沙绿
         self.setDefaultFont(QFont("Consolas", 13))
 
-        # 样式表 0-1-2-3-4
+        # 样式表 0-1-2-3-4-5
         # 0: 关键字 1: 运算符 2: 格式符 3: 数字 4: 默认 5: 注释
         # 颜色
         self.setColor(QColor("#3CB371"), 0)

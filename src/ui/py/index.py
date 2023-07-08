@@ -15,9 +15,10 @@ from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
 from search import SearchReplaceWindow
 from manager import DangerManagerWindow
 
-#utils
+# utils
 from src.utils.ctags.fun_value_find import funvaluefind
 from src.utils.compile.compile import compile, comrun, run
+
 
 # run
 # from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
@@ -87,7 +88,6 @@ class IndexWindow(QMainWindow):
         # 信号要后发射 先建立连接之后再发射
         self.disable_operation.emit()
 
-
         # 监听悬停事件
         self.ui.backto.enterEvent = self.on_back_button_enter_event
         self.ui.backto.leaveEvent = self.on_back_button_leave_event
@@ -130,7 +130,6 @@ class IndexWindow(QMainWindow):
         # 编译并运行
         self.ui.compile_run_c.triggered.connect(self.compile_run_c)
 
-
     def openfile(self):
         test_path = self.config_ini["main_project"]["project_name"] + self.config_ini["test"]["folder_path"]
         fileName, isOk = QFileDialog.getOpenFileName(self, "选取文件", test_path, "C/C++源文件 (*.c *.cpp)")
@@ -164,7 +163,6 @@ class IndexWindow(QMainWindow):
 
             # 一些逻辑
             self.enable_operation.emit()
-
 
     def createfile(self):
         # 打开文件夹，创建新文件，然后保存，打开
@@ -354,7 +352,6 @@ class IndexWindow(QMainWindow):
         target_index = 1
         self.ui.show_tab_widget.setCurrentIndex(target_index)
 
-
     # 右侧树
     def tree_display(self, funlist, vallist):
         self.ui.info_tree_widget.clear()
@@ -416,8 +413,9 @@ class IndexWindow(QMainWindow):
 
     def compile_c(self):
         # 写自己的类的调用
-        self.c_out_filename = self.c_sour_filename.replace(".c",".exe")
-        self.c_out_file = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"]["exe"] + self.c_out_filename
+        self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
+        self.c_out_file = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"][
+            "exe"] + self.c_out_filename
         clang_path = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"]["clang"]
         comp = compile(self.c_sour_file, self.c_out_file, clang_path=clang_path)
         p = comp.run_com()
@@ -441,8 +439,6 @@ class IndexWindow(QMainWindow):
             )
             # 显示自定义消息框
             message_box.exec_()
-        # 编译的文件在哪里 message
-        pass
 
     def run_c(self):
         self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
@@ -452,9 +448,14 @@ class IndexWindow(QMainWindow):
         runn = run(self.c_out_file)
         exe_result = runn.run_run()
         if exe_result == False:
-            self.ui.terminal_c.append(".exe不存在，请先编译！")
+            message_box = CustomMessageBox(
+                QIcon(self.ui_icon),  # 设置窗口图标
+                '提示',  # 标题
+                f'{self.c_out_filename}.exe不存在，请先编译！'  # 内容
+            )
+            message_box.exec_()
         else:
-            self.ui.terminal_c.append(exe_result)
+            self.ui.terminal_c.append('[out]: \n' + exe_result)
 
     def compile_run_c(self):
         self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
@@ -465,7 +466,12 @@ class IndexWindow(QMainWindow):
         comp_run = comrun(self.c_sour_file, self.c_out_file, clang_path)
         result = comp_run.com_run()
         if result == False:
-            self.ui.terminal_c.append("编译失败")
+            message_box = CustomMessageBox(
+                QIcon(self.ui_icon),  # 设置窗口图标
+                '提示',  # 标题
+                '编译失败！'  # 内容
+            )
+            message_box.exec_()
         else:
             self.ui.terminal_c.append('[out]: \n' + result)
 
@@ -517,8 +523,6 @@ class IndexWindow(QMainWindow):
                 font-family: "Consolas", monospace;}"""
         self.ui.input_bash.setStyleSheet(style_sheet)
 
-
-
     def set_All_Icon_Shortcut(self):
         self.unit_Icon_Shortcut(self.ui.open, 'ui_open', 'Ctrl+O')
         self.unit_Icon_Shortcut(self.ui.new_file, 'ui_new_file', 'Ctrl+N')
@@ -566,6 +570,7 @@ class IndexWindow(QMainWindow):
         # 切换按钮的背景图片为初始图片
         self.ui.backto.setStyleSheet(
             f"QPushButton {{ border-image: url({self.ui_back_to});background-color: transparent; }}")
+
 
 if __name__ == '__main__':
     app = QApplication([])

@@ -191,7 +191,7 @@ class SearchReplaceWindow(QDialog):
             message_box = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text='请先选中一个区域！')
             message_box.exec_()
         elif input_string:
-            start_line = current_tab.send_signal_(Qsci.QsciScintilla.SCI_LINEFROMPOSITION,Qsci.QsciScintilla.SCI_GETSELECTIONSTART)
+            start_line = current_tab.send_signal_(Qsci.QsciScintilla.SCI_LINEFROMPOSITION, Qsci.QsciScintilla.SCI_GETSELECTIONSTART)
             start_index = current_tab.send_signal_(Qsci.QsciScintilla.SCI_GETCOLUMN, Qsci.QsciScintilla.SCI_GETSELECTIONSTART)
             end_line = current_tab.send_signal_(Qsci.QsciScintilla.SCI_LINEFROMPOSITION, Qsci.QsciScintilla.SCI_GETSELECTIONEND)
             end_index = current_tab.send_signal_(Qsci.QsciScintilla.SCI_GETCOLUMN, Qsci.QsciScintilla.SCI_GETSELECTIONEND)
@@ -375,6 +375,7 @@ class SearchReplaceWindow(QDialog):
             else:
                 positions = []
         return positions
+
     # 重写
     def enterEvent(self, event):
         # 鼠标进入部件时更换光标
@@ -385,4 +386,3 @@ class SearchReplaceWindow(QDialog):
     def leaveEvent(self, event):
         # 鼠标离开部件时，恢复默认光标样式
         self.unsetCursor()
-

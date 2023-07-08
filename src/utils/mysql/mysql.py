@@ -25,15 +25,10 @@ class SQL:
                                   db=self.dbname,
                                   charset="utf8")
         self.cursor = self.db.cursor()
-        if self.cursor:
-            print('~~~连接mysql成功~~~')
-        else:
-            print('~~~连接mysql失败~~~')
 
     def close_db(self):
         self.db.close()
         self.cursor.close()
-        print('~~~断开mysql连接~~~')
 
     def execute_query(self, query):
         self.cursor.execute(query)
@@ -72,7 +67,6 @@ class SQL:
 
 # if __name__ == '__main__':
 #
-
     #
     # # dict = {'id':'10000222','username':'uiuiui','password':'1234556','salt':b'\0x...','private_key':str(random.randint(0,10000))}
     # # 插入数据

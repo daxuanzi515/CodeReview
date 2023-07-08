@@ -2,8 +2,11 @@ from PyQt5 import Qsci
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QCursor, QPixmap
 from PyQt5.QtWidgets import QDialog
+# test
+# from Tools import CustomMessageBox
 
-from Tools import CustomMessageBox
+# run
+from .Tools import CustomMessageBox
 
 
 class SearchReplaceWindow(QDialog):

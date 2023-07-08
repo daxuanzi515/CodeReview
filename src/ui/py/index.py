@@ -11,16 +11,16 @@ from src.config.config import Config
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
 # test
-from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
-from search import SearchReplaceWindow
+# from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
+# from search import SearchReplaceWindow
 
 #utils
 from src.utils.ctags.fun_value_find import funvaluefind
 from src.utils.compile.compile import compile, comrun, run
 
 # run
-# from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
-# from .search import SearchReplaceWindow
+from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
+from .search import SearchReplaceWindow
 class IndexWindow(QMainWindow):
     # 定义可操作信号 不可操作信号
     enable_operation = QtCore.pyqtSignal()
@@ -159,8 +159,7 @@ class IndexWindow(QMainWindow):
 
             # 一些逻辑
             self.enable_operation.emit()
-        else:
-            print('无文件！')
+
 
     def createfile(self):
         # 打开文件夹，创建新文件，然后保存，打开
@@ -295,7 +294,6 @@ class IndexWindow(QMainWindow):
                 messagebox = SaveMessage(QIcon(self.ui_icon))
                 messagebox.save.connect(self.save)
                 messagebox.exec_()
-                # if messagebox.result() == QMessageBox.Rejected:# 取消也直接关闭
                 self.ui.text_editor.removeTab(current_index)
             else:
                 # 否则直接关闭当前页
@@ -312,7 +310,6 @@ class IndexWindow(QMainWindow):
                 current_tab = self.ui.text_editor.currentWidget()
                 # 检查部件的状态
                 status = current_tab.getStatus()
-                print(index, ':', status)
                 if status:
                     # 如果部件有修改，询问是否保存
                     messagebox = SaveMessage(QIcon(self.ui_icon))
@@ -363,7 +360,6 @@ class IndexWindow(QMainWindow):
         val = QTreeWidgetItem(self.ui.info_tree_widget)
         val.setText(0, "变量")
         for i in funlist:
-            # print("i:", i)
             if i.filepath == filename:
                 child = QTreeWidgetItem(fun)
                 child.setText(0, i.name + '(' + i.line + ')')

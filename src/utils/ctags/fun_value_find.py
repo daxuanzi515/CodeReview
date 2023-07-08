@@ -37,12 +37,9 @@ class funvaluefind():
             if line.startswith("!_TAG"):
                 continue
             split_line = line.split('\t')
-            # print("split_line:", split_line)
             fun = FunctionValue()
             fun.name = split_line[0]
-            # print("funname:", fun.name)
             fun.filepath = split_line[1]
-            # print("len:", len(split_line))
             if len(split_line) == 8 or len(split_line) == 6:
                 fun.line = split_line[4]
                 fun.type = split_line[3]

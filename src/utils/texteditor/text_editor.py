@@ -67,21 +67,18 @@ class TextEditorWidget(QWidget):
         self.__editor.setCallTipsVisible(0)
 
         autocompletions = [
-            '#include', 'using', 'namespace', 'std',
+            'include', 'using', 'namespace', 'std',
             'scanf', 'printf', 'return', 'char', '{}',
             '[]', '()', 'int', 'double', 'long', 'float',
             'string', 'endl', 'stdio.h', 'stdlib.h', 'iostream', '<>',
             'free', 'malloc', 'new', 'delete', 'public', 'private', 'protected',
-            'sum(int a,int b)',
-            'add(float a,float b)',
-            'merge(double a,double b)',
-            'divide(long a,long b)',
-            'some_func()',
-            'add(int a,int b)',
-            'test(int a,int b,int c)',
-            'func(float a,float b,float c)',
-            'test1(double a,double b,double c)',
-            'test2(long a,long b,long c)',
+            'cin', 'cout', 'for', 'while', 'do', 'const', 'continue', 'break', 'if', 'else',
+            'auto', 'signed', 'short', 'case', 'try', 'catch', 'switch', 'default',
+            'true', 'false', 'struct', 'typedef', 'goto', 'sizeof', 'void', 'static', 'union',
+            'enum', 'inline', 'extern', 'throw', 'bool', 'class', 'template', 'this', 'vector',
+            'math.h', 'abs', 'strcat', 'strcmp', 'strlen', 'strcpy', 'strchr', 'strstr', 'rand',
+            'exit', 'time.h', 'string.h', 'ctype.h', 'isdigit', 'isalpha', 'isblank', 'isalnum',
+            'getchar', 'fopen', 'fflush', 'fclose', 'remove', 'fprintf', 'puts', 'abort', 'ctime'
         ]
         for ac in autocompletions:
             self.__api.add(ac)
@@ -143,8 +140,6 @@ class TextEditorWidget(QWidget):
     # 得到当前文本
     def getText(self):
         content = self.__editor.text()
-        print(type(content))
-        print(content)
         return content
 
     # 得到编辑器当前状态
@@ -305,13 +300,10 @@ class MeLexer(QsciLexerCustom):
         text = self.parent().text()[start:end]
 
         # 3. 词法分析
-        # p = re.compile(r"[*]\/|\/[*]|\s+|\w+|\W")# /**/
-        # p = re.compile(r"\*|\*|//.*?(?=\r?\n|$)|\s+|\w+|\W") # //
         p = re.compile(r"\*\/|\/\*|//.*?(?=\r?\n|$)|\s+|\w+|\W")  # // and /**/
 
         # 关键词列表里是这样的元组  (token_name, token_len) :（关键词内容,关键词长度）
         token_list = [(token, len(bytearray(token, "utf-8"))) for token in p.findall(text)]
-        # print(token_list)
         # 4. 风格化
         # 4.1 分支
         multiline_comm_flag = False
@@ -349,16 +341,3 @@ class MeLexer(QsciLexerCustom):
                     self.setStyling(token[1], 5)
                 else:
                     self.setStyling(token[1], 4)
-
-# if __name__ == '__main__':
-#     app = QApplication([])
-#
-#     me_editor = TextEditorWidget('test.c')
-#     me_editor.show()
-#     path_c = r'D:\PyCharmTest\PyCharmPackets\Models\StaticCodeAnalyzer\FastCodeReview\test\init_data\test_cpp\test_data\test.c'
-#     with open(path_c, 'r', encoding='utf-8') as file:
-#         target_str = file.read()
-#     file.close()
-#     # print(target_str)
-#     me_editor.addText(target_str)
-#     app.exec_()

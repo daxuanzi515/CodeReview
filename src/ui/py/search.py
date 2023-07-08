@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QDialog
 # test
 from Tools import CustomMessageBox
 
+
 # run
 # from .Tools import CustomMessageBox
 
@@ -29,7 +30,8 @@ class SearchReplaceWindow(QDialog):
         self.smaller_pixmap = self.pixmap.scaled(24, 24)  # 将图像调整为24*24的尺寸
         self.setWindowIcon(QIcon(self.ui_icon))
         # 设置消息对象
-        self.current_index = 0  # 当前位置索引
+        self.current_index = 0  # 查找的位置第一位
+        self.current_index_ = 0  # 替换的位置第一位
         self.keywords_pos = []
         self.select_keywords_pos = []
         self.replace_pos = []
@@ -51,8 +53,8 @@ class SearchReplaceWindow(QDialog):
         self.ui.replace_all.clicked.connect(self.replace_all_string)
         self.ui.Forward_s.clicked.connect(self.jump_to_up)
         self.ui.Behind_s.clicked.connect(self.jump_to_down)
-        self.ui.Forward_r.clicked.connect(self.jump_to_up)
-        self.ui.Behind_r.clicked.connect(self.jump_to_down)
+        self.ui.Forward_r.clicked.connect(self.jump_to_up_)
+        self.ui.Behind_r.clicked.connect(self.jump_to_down_)
 
     def replace_single_string(self):
         init_word = self.ui.input_r.currentText()
@@ -162,16 +164,17 @@ class SearchReplaceWindow(QDialog):
                     break
                 found_pos = current_tab.send_signal(parameter1='SCI_GETCURRENTPOS', parameter2=None)
                 found_line = current_tab.send_signal(parameter1='SCI_LINEFROMPOSITION', parameter2=found_pos)
-                found_index = found_pos - current_tab.send_signal(parameter1='SCI_POSITIONFROMLINE', parameter2=found_line) - 1
-
+                found_index = found_pos - current_tab.send_signal(parameter1='SCI_POSITIONFROMLINE',
+                                                                  parameter2=found_line) - 1
                 if len(input_string) > 1:
                     positions.add(
-                        (found_line, found_index - len(input_string) + 1, found_line, found_index + 1))  # 记录匹配的位置（行号和索引）
+                        (
+                        found_line, found_index - len(input_string) + 1, found_line, found_index + 1))  # 记录匹配的位置（行号和索引）
                 else:
-                    positions.add((found_line, found_index, found_line, found_index + len(input_string)))  # 记录匹配的位置（行号和索引）
-
+                    positions.add(
+                        (found_line, found_index, found_line, found_index + len(input_string)))  # 记录匹配的位置（行号和索引）
                 count += 1
-                line = found_line  # 更新起始行号，从上一次匹配的行开始继续搜索
+                line = found_line
                 index = found_index + len(input_string)
 
             self.keywords_pos = list(positions)
@@ -191,10 +194,14 @@ class SearchReplaceWindow(QDialog):
             message_box = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text='请先选中一个区域！')
             message_box.exec_()
         elif input_string:
-            start_line = current_tab.send_signal_(Qsci.QsciScintilla.SCI_LINEFROMPOSITION, Qsci.QsciScintilla.SCI_GETSELECTIONSTART)
-            start_index = current_tab.send_signal_(Qsci.QsciScintilla.SCI_GETCOLUMN, Qsci.QsciScintilla.SCI_GETSELECTIONSTART)
-            end_line = current_tab.send_signal_(Qsci.QsciScintilla.SCI_LINEFROMPOSITION, Qsci.QsciScintilla.SCI_GETSELECTIONEND)
-            end_index = current_tab.send_signal_(Qsci.QsciScintilla.SCI_GETCOLUMN, Qsci.QsciScintilla.SCI_GETSELECTIONEND)
+            start_line = current_tab.send_signal_(Qsci.QsciScintilla.SCI_LINEFROMPOSITION,
+                                                  Qsci.QsciScintilla.SCI_GETSELECTIONSTART)
+            start_index = current_tab.send_signal_(Qsci.QsciScintilla.SCI_GETCOLUMN,
+                                                   Qsci.QsciScintilla.SCI_GETSELECTIONSTART)
+            end_line = current_tab.send_signal_(Qsci.QsciScintilla.SCI_LINEFROMPOSITION,
+                                                Qsci.QsciScintilla.SCI_GETSELECTIONEND)
+            end_index = current_tab.send_signal_(Qsci.QsciScintilla.SCI_GETCOLUMN,
+                                                 Qsci.QsciScintilla.SCI_GETSELECTIONEND)
             # 存储匹配的位置
             positions = set()
             count = 0
@@ -227,7 +234,8 @@ class SearchReplaceWindow(QDialog):
                         break
                     if len(input_string) > 1:
                         positions.add(
-                            (found_line, found_index - len(input_string) + 1, found_line, found_index + 1))  # 记录匹配的位置（行号和索引）
+                            (found_line, found_index - len(input_string) + 1, found_line,
+                             found_index + 1))  # 记录匹配的位置（行号和索引）
                     else:
                         positions.add(
                             (found_line, found_index, found_line, found_index + len(input_string)))  # 记录匹配的位置（行号和索引）
@@ -242,6 +250,7 @@ class SearchReplaceWindow(QDialog):
             self.select_keywords_pos = list(positions)
             self.ui.msg1.setText(f"共搜索到关键词: '{input_string}'  {count}次！")
 
+    # 查找的追溯
     # 向下追溯
     def jump_to_down(self):
         positions = self.isValue()
@@ -259,10 +268,39 @@ class SearchReplaceWindow(QDialog):
     def jump_to_up(self):
         positions = self.isValue()
         if positions:
-            self.current_index -= 1
             if self.current_index < 0:
                 self.current_index = len(positions) - 1
+            else:
+                self.current_index -= 1
             position = positions[self.current_index]
+            end_line, end_index = position[2], position[3]
+            current_tab = self.father.currentWidget()
+            current_tab.moveCursor(end_line, end_index)
+            current_tab.highlight_text(position)
+
+    # 替换的追溯
+    # 向下追溯
+    def jump_to_down_(self):
+        positions = self.isValue()
+        if positions:
+            position = positions[self.current_index_]
+            end_line, end_index = position[2], position[3]
+            current_tab = self.father.currentWidget()
+            current_tab.moveCursor(end_line, end_index)
+            current_tab.highlight_text(position)
+            self.current_index_ += 1
+            if self.current_index_ >= len(positions):
+                self.current_index_ = 0
+
+    # 向上追溯
+    def jump_to_up_(self):
+        positions = self.isValue()
+        if positions:
+            if self.current_index_ < 0:
+                self.current_index_ = len(positions) - 1
+            else:
+                self.current_index_ -= 1
+            position = positions[self.current_index_]
             end_line, end_index = position[2], position[3]
             current_tab = self.father.currentWidget()
             current_tab.moveCursor(end_line, end_index)
@@ -359,8 +397,9 @@ class SearchReplaceWindow(QDialog):
         return forward
 
     def isValue(self):
-        current_index = self.father.currentIndex()
-        if current_index != 0:
+        current_tab_index = self.ui.search_replace.currentIndex()
+        current_tab_name = self.ui.search_replace.tabText(current_tab_index)
+        if current_tab_name == '查找':
             if self.keywords_pos:
                 positions = self.keywords_pos
             elif self.select_keywords_pos:
@@ -374,7 +413,12 @@ class SearchReplaceWindow(QDialog):
                 positions = self.select_replace_pos
             else:
                 positions = []
-        return positions
+        return self.sortTuple(positions)
+
+    # 排序它们的位置
+    def sortTuple(self, data):
+        sorted_data = sorted(data, key=lambda x: (x[0], x[1], x[2], x[3]))
+        return sorted_data
 
     # 重写
     def enterEvent(self, event):

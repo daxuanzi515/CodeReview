@@ -67,6 +67,11 @@ class TextEditorWidget(QWidget):
         self.__editor.setCallTipsVisible(0)
 
         autocompletions = [
+            '#include', 'using', 'namespace', 'std',
+            'scanf', 'printf', 'return', 'char', '{}',
+            '[]', '()', 'int', 'double', 'long', 'float',
+            'string', 'endl', 'stdio.h', 'stdlib.h', 'iostream', '<>',
+            'free', 'malloc', 'new', 'delete', 'public', 'private', 'protected',
             'sum(int a,int b)',
             'add(float a,float b)',
             'merge(double a,double b)',

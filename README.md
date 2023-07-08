@@ -32,7 +32,7 @@ pip install qt_material
 
 把标签页名字改小写，也就不应用大写
 
-搜QtabBar，修改成为如下，就是把`text-transform`的`uppercase`修改为`none`
+搜`QtabBar`，修改成为如下，就是把`text-transform`的`uppercase`修改为`none`
 ```css
     QTabBar{
       text-transform: none;
@@ -113,44 +113,6 @@ db_password = 你的密码
 它的最大缺陷就是只能处理有依赖的.c/cpp,.h文件编译问题
 
 它只能把有依赖关系的文件放在`test\init_data\test_data\test_c`里，因为它强制查含`.c`的文件，没有更新的分析，这里后续是可以修改的
-
-具体方法就是先查一遍所有`.c/.cpp`头文件部分，然后分离出每个文件所含的头文件
-
-再对头文件的声明函数和变量在其他文件里面搜索...一个大递归！ 
-
-`chatgpt`给我的字典递归:
-
-```python
-import os
-# 存储文件依赖关系的字典
-dependency_map = {}
-
-def find_dependencies(file_path):
-    # 解析文件内容，查找头文件调用
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
-        for line in lines:
-            if line.startswith('#include'):
-                # 提取头文件路径
-                include_file = line.split()[1].strip('\"<>')
-                # 添加依赖关系到当前文件的依赖列表
-                dependency_map.setdefault(file_path, []).append(include_file)
-                # 递归查找头文件的依赖关系
-                find_dependencies(include_file)
-
-def build_dependency_map(folder_path):
-    # 遍历文件夹下的所有源文件
-    for root, dirs, files in os.walk(folder_path):
-        for file in files:
-            if file.endswith(('.c', '.cpp')):
-                file_path = os.path.join(root, file)
-                find_dependencies(file_path)
-
-# 使用示例
-build_dependency_map('Your Path')
-print(dependency_map)
-```
-
 
 举个例子:
 

@@ -102,6 +102,89 @@ db_password = 你的密码
 
 `pipreqs ./ --encoding=utf8`
 
+## 文件缺失
+
+`clang.exe` 请自己去下载捏,然后放在`compile`目录下
+
+如果遇到`compile`出现问题，因为不是我负责的部分
+
+我就直说了:
+
+它的最大缺陷就是只能处理有依赖的.c/cpp,.h文件编译问题
+
+它只能把有依赖关系的文件放在`test\init_data\test_data\test_c`里，因为它强制查含`.c`的文件，没有更新的分析，这里后续是可以修改的
+
+具体方法就是先查一遍所有`.c/.cpp`头文件部分，然后分离出每个文件所含的头文件
+
+再对头文件的声明函数和变量在其他文件里面搜索...一个大递归！ 
+
+`chatgpt`给我的字典递归:
+
+```python
+import os
+# 存储文件依赖关系的字典
+dependency_map = {}
+
+def find_dependencies(file_path):
+    # 解析文件内容，查找头文件调用
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            if line.startswith('#include'):
+                # 提取头文件路径
+                include_file = line.split()[1].strip('\"<>')
+                # 添加依赖关系到当前文件的依赖列表
+                dependency_map.setdefault(file_path, []).append(include_file)
+                # 递归查找头文件的依赖关系
+                find_dependencies(include_file)
+
+def build_dependency_map(folder_path):
+    # 遍历文件夹下的所有源文件
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            if file.endswith(('.c', '.cpp')):
+                file_path = os.path.join(root, file)
+                find_dependencies(file_path)
+
+# 使用示例
+build_dependency_map('Your Path')
+print(dependency_map)
+```
+
+
+举个例子:
+
+`test.h`里有函数`int add(int a,int b)`声明
+```c++
+#include<stdio.h>
+#include<stdlib.h>
+int add(int a, int b);
+```
+
+`test.cpp`里对其进行引用`#include "test.h"`,并调用`add(12,15)`
+```c++
+#include "test.h"
+int sum;
+int main()
+{
+    sum = add(12, 15);
+    printf("sum = %d",sum);
+    return 0;
+}
+```
+`test2.cpp`里实现了`add`方法
+```c++
+#include "test.h"
+int add(int a,int b)
+{
+    return a+b;
+}
+```
+放在一个文件夹下用`clang.exe`编译，会自动查找`test.h`只要在同一文件夹下就可以
+```bash
+clang.exe -o test.exe test.cpp test2.cpp    
+```
+当你不想在同一文件夹下生成`exe`文件，请指定固定的绝对路径
 ## 演示视频
 
 在另一分支`test`里,暂不描述内容

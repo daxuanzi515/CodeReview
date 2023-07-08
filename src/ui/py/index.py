@@ -11,16 +11,19 @@ from src.config.config import Config
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
 # test
-# from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
-# from search import SearchReplaceWindow
+from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
+from search import SearchReplaceWindow
+from manager import DangerManagerWindow
 
 #utils
 from src.utils.ctags.fun_value_find import funvaluefind
 from src.utils.compile.compile import compile, comrun, run
 
 # run
-from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
-from .search import SearchReplaceWindow
+# from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
+# from .search import SearchReplaceWindow
+# from .manager import DangerManagerWindow
+
 class IndexWindow(QMainWindow):
     # 定义可操作信号 不可操作信号
     enable_operation = QtCore.pyqtSignal()
@@ -77,6 +80,8 @@ class IndexWindow(QMainWindow):
         self.ui.text_editor.tabCloseRequested.connect(self.close_tab)
         # 设置查找替换窗口
         self.search_replace_window = None
+        # 设置风险函数管理窗口
+        self.fun_manager_window = None
         # 函数连接
         self.interface_function()
         # 信号要后发射 先建立连接之后再发射
@@ -328,8 +333,11 @@ class IndexWindow(QMainWindow):
         self.search_replace_window.show()
 
     def fun_manager(self):
-        # TODO
-        pass
+        manager_ui_path = self.config_ini['main_project']['project_name'] + self.config_ini['ui']['manage_ui']
+        manager_ui_data, _ = uic.loadUiType(manager_ui_path)
+        # 放入配置、ui_data、父亲窗口
+        self.fun_manager_window = DangerManagerWindow(config_ini=self.config_ini, ui_data=manager_ui_data, parent=self)
+        self.fun_manager_window.show()
 
     def generate_img(self):
         # TODO

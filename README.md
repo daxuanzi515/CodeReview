@@ -10,8 +10,6 @@
 
 安装依赖 `pip install -r requirements.txt`
 
-mimim
-
 ## 样式
 
 所使用的样式需要下载

@@ -8,7 +8,11 @@
 
 连接方式是`pymysql` 不是`QtSql.QSqlDatabase`
 
+
 安装依赖 `pip install -r requirements.txt`
+
+安装依赖 `pip install -r requirements.txt`s
+
 
 ## 样式
 

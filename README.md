@@ -10,6 +10,8 @@
 
 安装依赖 `pip install -r requirements.txt`
 
+这个是一个测试`git push`的东西
+
 ## 样式
 
 所使用的样式需要下载

@@ -8,9 +8,7 @@
 
 连接方式是`pymysql` 不是`QtSql.QSqlDatabase`
 
-安装依赖 `pip install -r requirements.txt`
-
-这个是一个测试`git push`的东西
+安装依赖 `pip install -r requirements.txt`s
 
 ## 样式
 

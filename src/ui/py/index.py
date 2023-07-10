@@ -123,6 +123,8 @@ class IndexWindow(QMainWindow):
         # 终端命令
         self.ui.terminal.triggered.connect(self.jump_terminal)
         self.ui.input_bash.returnPressed.connect(self.terminal_run)
+        # 切换标签页之后右侧树改变
+        self.ui.text_editor.currentChanged.connect(self.change_tab)
         # 编译
         self.ui.compiler_c.triggered.connect(self.compile_c)
         # 运行
@@ -235,6 +237,7 @@ class IndexWindow(QMainWindow):
     def create_new_open_tab(self, absolute_path):
         # 照样分割路径
         path, name = split(absolute_path)
+        self.fun_val_tree(path, name)
         # 判断当前打开的文件是否已经被打开过...
         # 不能根据内容是否一致判断
         for number in range(self.ui.text_editor.count()):
@@ -476,8 +479,6 @@ class IndexWindow(QMainWindow):
             else:
                 self.ui.terminal_c.append('[out]: \n' + exe_result)
 
-
-
     def compile_run_c(self):
         self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
         self.c_out_file = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"][
@@ -589,6 +590,10 @@ class IndexWindow(QMainWindow):
         icon = QIcon(self.config_ini['main_project']['project_name'] + self.config_ini['ui_img'][path])
         component.setIcon(icon)
         component.setShortcut(shortcut)
+
+    def change_tab(self):
+        current_tab = self.ui.text_editor.currentWidget()
+        self.fun_val_tree(current_tab.filepath,current_tab.filename)
 
     # override
     def enterEvent(self, event):

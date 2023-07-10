@@ -27,7 +27,7 @@ class funvaluefind():
     def get_fun_value(self):
         filename = self.filename
         tagsfile = self.tagsfile
-        cmd = self.ctagspath + " --languages=c,c++ -R -I argv --kinds-c=+defglmpstuvx --kinds-c++=+defglmpstuvx --fields=+n -o " + tagsfile + " " + filename
+        cmd = self.ctagspath + " -R -I argv --kinds-c=+defglmpstuvx --fields=+n -o " + tagsfile + " " + filename
         # cmd = "ctags.exe --languages=c -R -I argv --kinds-c=+defglmpstuvx --fields=+n -o " + tagsfile + " " + filename
         os.system(cmd)
         f = open(self.tagsfile, "r")

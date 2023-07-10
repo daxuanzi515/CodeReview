@@ -203,6 +203,22 @@ class TextEditorWidget(QWidget):
         self.__editor.setSelectionForegroundColor(QColor('#FF8C00')) # 橘
         self.__editor.setSelection(start_line, start_index, end_line, end_index)
 
+    def multi_highlight_text(self, positions):
+        indicator_number = 1  # 指示器的编号
+        lines = self.__editor.lines()-1
+        indexs = self.__editor.lineLength(lines)
+        self.__editor.SendScintilla(QsciScintilla.SCI_SETINDICATORCURRENT, indicator_number)
+        self.__editor.clearIndicatorRange(0, 0, lines, indexs, indicator_number)
+        for start_line, start_index, end_line, end_index in positions:
+            self.__editor.SendScintilla(QsciScintilla.SCI_INDICSETSTYLE, indicator_number,
+                                      QsciScintilla.INDIC_CONTAINER)
+            self.__editor.SendScintilla(QsciScintilla.SCI_INDICSETFORE, indicator_number,
+                                      QColor('#4169E1'))
+            self.__editor.fillIndicatorRange(start_line, start_index, end_line, end_index, indicator_number)
+
+
+
+
     def getSelectionState(self):
         return self.__editor.getSelection()
 

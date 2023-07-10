@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>845</width>
-    <height>635</height>
+    <width>961</width>
+    <height>721</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>821</width>
-     <height>611</height>
+     <width>941</width>
+     <height>701</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">

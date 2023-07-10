@@ -1,13 +1,15 @@
+import random
+
 from PyQt5 import uic, QtWidgets
 from PyQt5.QtGui import QPixmap, QIcon, QCursor
-from PyQt5.QtWidgets import QDialog, QApplication
-
+from PyQt5.QtWidgets import QDialog, QApplication, QTableWidgetItem
 
 # test
 # from Tools import CustomMessageBox
 from qt_material import apply_stylesheet
 
 from src.config.config import Config
+from src.utils.mysql.mysql import SQL
 
 class DangerManagerWindow(QDialog):
     def __init__(self, config_ini, ui_data, parent=None):
@@ -37,17 +39,67 @@ class DangerManagerWindow(QDialog):
         # 设置特定列的相对宽度比例
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
 
+        # 对象
+        self.danger_func_data = []
+        # 槽函数
+        self.ui.add.clicked.connect(self.addData)
+        self.ui.remove.clicked.connect(self.removeData)
 
-    def removeData(self, data):
-        # TODO
-        pass
+    # 数据库混一起，到时候再查...,不然每多一个用户就要给建一张新表
 
-    def addData(self, data):
+    def removeData(self):
+        # 选中的删除 没选的没法删
+        self.ui.database.removeRow(self.ui.database.currentRow())
+
+    def addData(self):
+        current_count = self.ui.database.rowCount()
+        # 将新数据插入到第一行
+        self.ui.database.insertRow(0)
+        name = self.ui.func_name.text()
+        level = self.ui.level.currentText()
+        solution = self.ui.solution.text()
+        row_input = [name, level, solution]
+        self.danger_func_data.append(row_input)
+        # (row, col, value)
+        for i in range(3):
+            per_item = QTableWidgetItem(row_input[i])
+            self.ui.database.setItem(0, i, per_item)
+
+        # 当数据超过一行时，移动原有数据向下一行
+        if current_count > 1:
+            for row in range(current_count - 1, 0, -1):
+                for col in range(3):
+                    item = self.ui.database.item(row - 1, col)
+                    if item is not None:
+                        new_item = QTableWidgetItem(item.text())
+                        self.ui.database.setItem(row, col, new_item)
+
         # TODO
-        pass
+        # table structure
+        # danger_function
+        # (id, func_name, level, solution)
+        # 知道当前登录的id 在登录之后记录 然后查表
 
     def setAllStyle(self):
         # TODO
+        mystyle = """
+        
+        QTableWidget{
+        
+        }
+        QTableWidgetItem{
+        
+        }
+        QLineEdit{
+        
+        }
+        QPushButton{
+        
+        }
+        QComboBox{
+        
+        }
+        """
         pass
 
     # 重写

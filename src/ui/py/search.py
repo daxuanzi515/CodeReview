@@ -178,6 +178,7 @@ class SearchReplaceWindow(QDialog):
                 index = found_index + len(input_string)
 
             self.keywords_pos = list(positions)
+            self.highlight_all_positions(self.keywords_pos)
             # self.ui.msg1 && self.ui.msg2
             self.ui.msg1.setText(f"共搜索到关键词: '{input_string}'  {count}次！")
 
@@ -304,7 +305,14 @@ class SearchReplaceWindow(QDialog):
             end_line, end_index = position[2], position[3]
             current_tab = self.father.currentWidget()
             current_tab.moveCursor(end_line, end_index)
-            current_tab.highlight_text(position)
+    #         current_tab.highlight_text(position)
+    #
+    # def highlight_all_positions(self, positions):
+    #     if positions:
+    #         current_tab = self.father.currentWidget()
+    #         for per_position in positions:
+    #             current_tab.highlight_text(per_position)
+    #             # TODO?
 
     # 限制两个里只能选一个 在选中了一个之后，另一个自动取消选择
     def setOnlyOneChecked(self):

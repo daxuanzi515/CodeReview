@@ -4,7 +4,7 @@ from os.path import split
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QFile
 from PyQt5.QtGui import QIcon, QPixmap, QCursor
-from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog, QFileSystemModel, QMessageBox, QTreeWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog, QFileSystemModel, QMessageBox, QTreeWidgetItem, QInputDialog
 from qt_material import apply_stylesheet
 
 from src.config.config import Config
@@ -444,18 +444,39 @@ class IndexWindow(QMainWindow):
         self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
         self.c_out_file = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"][
             "exe"] + self.c_out_filename
-        # 这里终端命令输入要新写逻辑，不能直接操控 然后要控制终端所在的目录
-        runn = run(self.c_out_file)
-        exe_result = runn.run_run()
-        if exe_result == False:
-            message_box = CustomMessageBox(
-                QIcon(self.ui_icon),  # 设置窗口图标
-                '提示',  # 标题
-                f'{self.c_out_filename}.exe不存在，请先编译！'  # 内容
-            )
-            message_box.exec_()
+        arg, ok = QInputDialog.getText(self, "提示", "如果含参数，请输入参数(空格分隔)，否则请关闭本窗口:")
+        if arg and ok:
+            # 这里终端命令输入要新写逻辑，不能直接操控 然后要控制终端所在的目录
+
+            runn = run(self.c_out_file, arg=arg)
+            exe_result = runn.run_run()
+            if exe_result == False:
+                message_box = CustomMessageBox(
+                    QIcon(self.ui_icon),  # 设置窗口图标
+                    '提示',  # 标题
+                    f'{self.c_out_filename}.exe不存在，请先编译！'  # 内容
+                )
+                message_box.exec_()
+            else:
+                self.ui.terminal_c.append('[out]: \n' + exe_result)
+        elif not ok:
+            pass
         else:
-            self.ui.terminal_c.append('[out]: \n' + exe_result)
+            # 这里终端命令输入要新写逻辑，不能直接操控 然后要控制终端所在的目录
+            arg = ''
+            runn = run(self.c_out_file, arg=arg)
+            exe_result = runn.run_run()
+            if exe_result == False:
+                message_box = CustomMessageBox(
+                    QIcon(self.ui_icon),  # 设置窗口图标
+                    '提示',  # 标题
+                    f'{self.c_out_filename}.exe不存在，请先编译！'  # 内容
+                )
+                message_box.exec_()
+            else:
+                self.ui.terminal_c.append('[out]: \n' + exe_result)
+
+
 
     def compile_run_c(self):
         self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
@@ -463,17 +484,36 @@ class IndexWindow(QMainWindow):
             "exe"] + self.c_out_filename
         clang_path = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"][
             "clang"]
-        comp_run = comrun(self.c_sour_file, self.c_out_file, clang_path)
-        result = comp_run.com_run()
-        if result == False:
-            message_box = CustomMessageBox(
-                QIcon(self.ui_icon),  # 设置窗口图标
-                '提示',  # 标题
-                '编译失败！'  # 内容
-            )
-            message_box.exec_()
+        # 提示 有参的话输入，否则不输入直接关....
+        arg, ok = QInputDialog.getText(self, "提示", "如果含参数，请输入参数(空格分隔)，否则请关闭本窗口:")
+        if arg and ok:
+            comp_run = comrun(self.c_sour_file, self.c_out_file, clang_path, arg=arg)
+            result = comp_run.com_run()
+            if result == False:
+                message_box = CustomMessageBox(
+                    QIcon(self.ui_icon),  # 设置窗口图标
+                    '提示',  # 标题
+                    '编译失败！'  # 内容
+                )
+                message_box.exec_()
+            else:
+                self.ui.terminal_c.append('[out]: \n' + result)
+        elif not ok:
+            pass
         else:
-            self.ui.terminal_c.append('[out]: \n' + result)
+            arg = ''
+            comp_run = comrun(self.c_sour_file, self.c_out_file, clang_path, arg=arg)
+            result = comp_run.com_run()
+            if result == False:
+                message_box = CustomMessageBox(
+                    QIcon(self.ui_icon),  # 设置窗口图标
+                    '提示',  # 标题
+                    '编译失败！'  # 内容
+                )
+                message_box.exec_()
+            else:
+                self.ui.terminal_c.append('[out]: \n' + result)
+
 
     def enable_operate(self):
         for i in self.ui.file_manager.actions():

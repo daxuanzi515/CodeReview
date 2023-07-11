@@ -1,0 +1,7 @@
+cryptography==39.0.1
+PyMySQL==1.1.0
+PyQt5==5.15.9
+pyqt5_plugins==5.15.9.2.3
+PyQt5_sip==12.12.1
+qt_material==2.14
+Send2Trash==1.8.2

@@ -12,9 +12,9 @@ from src.utils.riskcheck.risk import RiskFind
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
 # test
-from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
-from search import SearchReplaceWindow
-from manager import DangerManagerWindow
+# from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
+# from search import SearchReplaceWindow
+# from manager import DangerManagerWindow
 
 # utils
 from src.utils.ctags.fun_value_find import funvaluefind
@@ -22,9 +22,9 @@ from src.utils.compile.compile import compile, comrun, run
 
 
 # run
-# from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
-# from .search import SearchReplaceWindow
-# from .manager import DangerManagerWindow
+from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
+from .search import SearchReplaceWindow
+from .manager import DangerManagerWindow
 
 class IndexWindow(QMainWindow):
     # 定义可操作信号 不可操作信号
@@ -668,26 +668,26 @@ class IndexWindow(QMainWindow):
         self.ui.backto.setStyleSheet(
             f"QPushButton {{ border-image: url({self.ui_back_to});background-color: transparent; }}")
 
-
-if __name__ == '__main__':
-    app = QApplication([])
-    apply_stylesheet(app, theme='light_lightgreen_500.xml', invert_secondary=True)
-    config_obj = Config()
-    config_ini = config_obj.read_config()
-    ui_path = config_ini['main_project']['project_name'] + config_ini['ui']['index_ui']
-    ui_data, _ = uic.loadUiType(ui_path)
-    index_window = IndexWindow(config_ini=config_ini, ui_data=ui_data)
-
-    # 获取屏幕的大小和窗口的大小
-    screen_geometry = QApplication.desktop().screenGeometry()
-    window_geometry = index_window.geometry()
-
-    # 计算窗口在屏幕上的位置
-    x = (screen_geometry.width() - window_geometry.width()) // 2
-    y = (screen_geometry.height() - window_geometry.height()) // 2
-
-    # 设置窗口的位置
-    index_window.move(x, y)
-
-    index_window.show()
-    app.exec_()
+#
+# if __name__ == '__main__':
+#     app = QApplication([])
+#     apply_stylesheet(app, theme='light_lightgreen_500.xml', invert_secondary=True)
+#     config_obj = Config()
+#     config_ini = config_obj.read_config()
+#     ui_path = config_ini['main_project']['project_name'] + config_ini['ui']['index_ui']
+#     ui_data, _ = uic.loadUiType(ui_path)
+#     index_window = IndexWindow(config_ini=config_ini, ui_data=ui_data)
+#
+#     # 获取屏幕的大小和窗口的大小
+#     screen_geometry = QApplication.desktop().screenGeometry()
+#     window_geometry = index_window.geometry()
+#
+#     # 计算窗口在屏幕上的位置
+#     x = (screen_geometry.width() - window_geometry.width()) // 2
+#     y = (screen_geometry.height() - window_geometry.height()) // 2
+#
+#     # 设置窗口的位置
+#     index_window.move(x, y)
+#
+#     index_window.show()
+#     app.exec_()

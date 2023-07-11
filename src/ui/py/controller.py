@@ -9,7 +9,7 @@ from .index import IndexWindow
 class MainWindowObject(QWidget):
     # 设置跳转其他窗口的信号
     to_register_window = QtCore.pyqtSignal()
-    to_index_window = QtCore.pyqtSignal()
+    to_index_window = QtCore.pyqtSignal(str)
 
     def __init__(self, config_ini):
         super(MainWindowObject, self).__init__()
@@ -22,8 +22,9 @@ class MainWindowObject(QWidget):
     def jumpToRegister(self):
         self.to_register_window.emit()
 
-    def jumpToIndex(self):
-        self.to_index_window.emit()
+    def jumpToIndex(self, user_id):
+        self.to_index_window.emit(user_id)
+
 
 
 class RegisterWindowObject(QWidget):
@@ -81,13 +82,12 @@ class ControllerMainToOthers:
         self.main_window_object.main_window.hide()
         self.register_window_object.register_window.show()
 
-    def show_index_window(self):
+    def show_index_window(self, user_id):
         # 隐藏主窗口 打开默认窗口
         self.index_window_object.to_main_window.connect(self.show_main_window)
         self.main_window_object.main_window.hide()
+        self.index_window_object.index_window.user_id = user_id
         self.index_window_object.index_window.show()
-    # ...
-
 
 class ControllerOthersToMain:
     def __init__(self, controller):

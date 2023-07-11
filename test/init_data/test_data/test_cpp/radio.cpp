@@ -5,8 +5,6 @@
 using namespace std;
 int main()
 {
-	int jjj;
-	int d;
     string s = "1234!";
     cout<<"s:"<<s<<endl;
     cout<<"Hello World!"<<endl;

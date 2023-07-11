@@ -10,7 +10,7 @@ from src.utils.mysql.mysql import SQL
 
 class LoginWindow(QWidget):
     # 定义登录成功的信号
-    login_success = QtCore.pyqtSignal()
+    login_success = QtCore.pyqtSignal(str)
     def __init__(self, config_ini, ui_data):
         super().__init__()
         # important config_ini
@@ -34,6 +34,7 @@ class LoginWindow(QWidget):
         self.ui.password.setEchoMode(QtWidgets.QLineEdit.Password)
         # 创建对象
         self.sql_obj = SQL(config_ini=config_ini)
+        self.user_id = None
         # 槽函数
         self.ui.login.clicked.connect(self.login_check)
         self.ui.change.clicked.connect(self.change_password)
@@ -60,10 +61,10 @@ class LoginWindow(QWidget):
     def verify_password(self, username, password):
         # 查出对应的密码和盐值
         self.sql_obj.connect_db()
-        res = self.sql_obj.select('user', "password, salt", condition=f"username = '{username}'")
+        res = self.sql_obj.select('user', "id, password, salt", condition=f"username = '{username}'")
         self.sql_obj.close_db()
         if res:
-            hashed_password, salt = res[0]
+            self.user_id, hashed_password, salt = res[0]
             checked_password0 = salt + password.encode('utf-8')
             check_password = hashlib.sha256(checked_password0).hexdigest()
             if check_password == hashed_password:
@@ -117,7 +118,7 @@ class LoginWindow(QWidget):
                 self.ui.username.clear()
                 self.ui.password.clear()
                 # 成功之后跳转到主界面IndexWindow 发射登录成功信号
-                self.login_success.emit()
+                self.login_success.emit(self.user_id)
             else:
                 self.show_error_message(tips)
                 self.ui.password.clear()

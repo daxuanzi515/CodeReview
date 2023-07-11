@@ -12,15 +12,16 @@ class compile(object):
     def get_all_file(self, filepath):
         list = []
         files = os.listdir(filepath)
-        for fi in files:
-            if self.inifile.endswith(".c"):
-                if re.match("(\w*)\.c$", fi) != None:
+        if re.match(".*\.c$", self.inifile) is not None:
+            for fi in files:
+                if re.match("(\w*)\.c$",fi) != None:
                     fi_d = filepath + '/' + fi
                     # 如果不目录
                     if not os.path.isdir(fi_d):
                         list.append(fi_d)
-            elif self.inifile.endswith(".cpp"):
-                if re.match("(\w*)\.cpp$", fi) != None:
+        elif re.match(".*\.cpp$", self.inifile) is not None:
+            for fi in files:
+                if re.match("(\w*)\.cpp$",fi) != None:
                     fi_d = filepath + '/' + fi
                     # 如果不目录
                     if not os.path.isdir(fi_d):

@@ -8,7 +8,7 @@
 
 连接方式是`pymysql` 不是`QtSql.QSqlDatabase`
 
-安装依赖 `pip install -r requirements.txt`s
+安装依赖 `pip install -r requirements.txt`
 
 ## 样式
 
@@ -116,11 +116,101 @@ db_password = 你的密码
 
 背景:`#143113`,字体:`#FF8BFF && Consolas`
 
+## C/C++函数标识、跳转
+
+### AST语法树
+
+通过语法树节点，得到函数声明、函数定义、函数调用、变量声明、变量赋值、运算符，返回....
+
+#### LLVM安装、clang库安装
+
+需要安装`windows64.exe`的`LLVM`，并把`???/???/bin/libclang.dll`加入环境变量里。
+
+[安装链接](https://github.com/llvm/llvm-project/releases/tag/llvmorg-16.0.0)
+
+之后即将封神！看看`python`库有多离谱，安装`pip install clang`安装的是`clang`调用的接口`api`
+
+#### 生成一棵针对某个文件的语法树
+
+调用`clang.index`模块里的多个类:
+
+```python
+from clang.cindex import Index, Config
+# 真好啊 API!
+# 配个环境
+libclangPath = r"???\????\bin\libclang.dll"
+Config.set_library_file(libclangPath)
+# 写你想要分析的路径 c/cpp/hh/cc/h文件
+file_path = r"test_no_headers.c"
+index = Index.create()
+your_father = index.parse(file_path)
+AST_Root = your_father.cursor
+```
+#### 简易分词 
+之前分词还看了半天的`flex`, 呵呵T^T, 这里直接`?`句话秒了
+```python
+cursor_content = ""
+for token in AST_Root.get_tokens():
+    cursor_content += token.spelling + '\n'
+print(cursor_content)
+```
+#### 分类内容
+传入语法树的根，查看`api`接口提炼关键字和内容
+
+`api`: `???/???/???/?????/Lib/site-packages/clang/cindex.py`
+
+```python
+def iterAST(cursor):
+    from clang.cindex import CursorKind
+    for cur in cursor.get_children():
+        if cur.kind == CursorKind.FUNCTION_DECL:
+            if cur:
+                # 函数声明
+                print("FUNCTION_DECL: {}".format(cur.spelling))
+            for cur_item in cur.get_children():
+                if cur_item.kind == CursorKind.CALL_EXPR:
+                    # 函数调用
+                    print("CALL_EXPR: {}".formate(cur_item.spelling))
+        elif cur.kind == CursorKind.VAR_DECL:
+            if cur:
+                # 变量声明
+                print("VAR_DECL: {}".format(cur.spelling))
+        elif cur.kind == CursorKind.FIELD_DECL:
+            if cur:
+                # 字段声明
+                print("FIELD_DECL: {}".format(cur.spelling))
+        elif cur.kind == CursorKind.TYPEDEF_DECL:
+            if cur:
+                # 类型定义
+                print("TYPEDEF_DECL: {}".format(cur.spelling))
+        else:
+            pass
+            # done??
+        # 递归调用
+        iterAST(cur)
+# 入口
+iterAST(AST_Root)
+```
+### 跳转
+
+对，没错，依旧是通过绝对位置硬算坐标TVT~~~
+
+~~但是已经算过很多次了，所以问题不大~~
+
+计算方法大致就是 : 从上面的语法树里获取到关键位置`*position`
+
+`position = (start_line, start_index, end_line, end_index)`
+`positions_func = [position_0,position_1,position_2, ...,position_n]`
+
+传入高亮函数`highlight_all_text(positions)`里进行高亮
+
 ## 下载文件
 
 登录之后的用户进主页面 进行代码审计之后生成的报告文件
 
-首先先存在数据库里 下载的时候才会取
+生成的报告是即时审计结果 数据库里存储的是用户自己添加的危险函数数据
+
+饼子图也是即时审计结果
 
 ## 控制跳转
 

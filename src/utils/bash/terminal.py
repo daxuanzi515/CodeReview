@@ -32,6 +32,9 @@ class Terminal(QMainWindow):
         sys.stdout = self.thr
         self.TextEditor = parent.ui.terminal_c
         self.LineEditor = parent.ui.input_bash
+        self.process = None
+        self.is_waiting_for_input = False
+
 
     def addData(self, text):
         cursor = self.TextEditor.textCursor()
@@ -65,22 +68,50 @@ class Terminal(QMainWindow):
         elif 'cd' in msg1:
             temp = msg1.split(' ')
             self.change_directory(temp[1])
-        elif ' ' in msg1:
+        elif ' ' in msg1 and not self.is_waiting_for_input:
             temp = msg1.split(' ')
             cmd = cmd + temp
-        else:
+            try:
+                self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                while True:
+                    line = self.process.stdout.readline()
+                    if not line:
+                        break
+                    output += line.decode('gbk')  # 将回显内容添加到字符串中
+                self.process.wait()
+            except Exception as e:
+                output = str(e)
+        elif not self.is_waiting_for_input and not ' ' in msg1 and not '.exe' in msg1:
             cmd.append(msg1)
-
-        try:
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+            try:
+                self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+                while True:
+                    line = self.process.stdout.readline()
+                    if not line:
+                        break
+                    output += line.decode('gbk')  # 将回显内容添加到字符串中
+                self.process.wait()
+            except Exception as e:
+                output = str(e)
+        elif '.exe' in msg1 and not self.is_waiting_for_input: # 限制输入参数？？？ 如果不含参数的话就不调用...
+            self.process = subprocess.Popen(msg1, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                            stderr=subprocess.STDOUT, universal_newlines=True)
+            self.is_waiting_for_input = True
+        elif self.is_waiting_for_input:
+            # 发送输入给子进程
+            self.process.stdin.write(msg1)
+            # 缓冲区为空就不调用
+            if msg1 == "" or msg1 == '\n':
+                pass
+            else:
+                self.process.stdin.flush()
+            self.process.stdin.close()
             while True:
-                line = process.stdout.readline()
+                line = self.process.stdout.readline()
                 if not line:
                     break
-                output += line.decode('gbk')  # 将回显内容添加到字符串中
-            process.wait()
-        except Exception as e:
-            output = str(e)
+                output += line
+            self.is_waiting_for_input = False
 
         header1 = "[in]: "
         header2 = "\n[out]:\n"

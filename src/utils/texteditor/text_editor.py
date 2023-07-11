@@ -100,7 +100,6 @@ class TextEditorWidget(QWidget):
         self.__editor.setWrapMode(QsciScintilla.WrapWord)
         self.__editor.setWrapVisualFlags(QsciScintilla.WrapFlagByText)
         self.__editor.setWrapIndentMode(QsciScintilla.WrapIndentIndented)
-
         # 使用tab
         self.__editor.setIndentationsUseTabs(True)
         # 设置换行符长度4
@@ -117,9 +116,6 @@ class TextEditorWidget(QWidget):
         self.__editor.setMarginLineNumbers(1, True)
         self.__editor.setMarginWidth(1, '0000')
         self.__editor.setMarginsForegroundColor(QColor("#006400"))
-        # 设置结束符是windows的\r\n 不设是默认\n
-        # self.__editor.setEolMode(QsciScintilla.EolWindows)
-
         # 默认未修改
         self.__editor.setModified(False)
 
@@ -134,7 +130,6 @@ class TextEditorWidget(QWidget):
                 input_content = '\n'.join(content)
         elif isinstance(content, str):
             input_content = content
-
         self.__editor.setText(input_content)
 
     # 得到当前文本
@@ -215,9 +210,6 @@ class TextEditorWidget(QWidget):
             self.__editor.SendScintilla(QsciScintilla.SCI_INDICSETFORE, indicator_number,
                                       QColor('#4169E1'))
             self.__editor.fillIndicatorRange(start_line, start_index, end_line, end_index, indicator_number)
-
-
-
 
     def getSelectionState(self):
         return self.__editor.getSelection()

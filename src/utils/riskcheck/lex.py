@@ -1,7 +1,4 @@
-
 import re
-import sys
-import getopt
 
 # token比较大的分类
 TOKEN_STYLE = [
@@ -82,12 +79,11 @@ class Lexer(object):
     def __init__(self):
         # 用来保存词法分析出来的结果
         self.tokens = []
-        self.line=1
+        self.line = 1
 
     # 判断是否是空白字符
     def is_blank(self, index):
         if content[index] == '\n':
-            # print(self.line)
             self.line +=1
         return (
             content[index] == ' ' or
@@ -102,9 +98,6 @@ class Lexer(object):
             index += 1
         return index
 
-    # 打印
-    # def print_log(self, style, value):
-    #     print ('(%s, %s)' % (style, value))
 
     # 判断是否是关键字
     def is_keyword(self, value):
@@ -120,7 +113,6 @@ class Lexer(object):
             i = self.skip_blank(i)
             # 如果是引入头文件，还有一种可能是16进制数，这里先不判断
             if content[i] == '#':
-                #self.print_log( '分隔符', content[ i ] )
                 self.tokens.append(Token(4, content[i], self.line))
                 i = self.skip_blank(i + 1)
                 # 分析这一引入头文件
@@ -152,7 +144,6 @@ class Lexer(object):
                         i = self.skip_blank(i + 1)
                         break
                     else:
-                        print ('include error!')
                         exit()
             # 如果是字母或者是以下划线开头
             elif content[i].isalpha() or content[i] == '_':
@@ -182,7 +173,7 @@ class Lexer(object):
                         i += 1
                     elif not content[i].isdigit():
                         if content[i] == '.':
-                            print ('float number error!')
+                            # print ('float number error!')
                             exit()
                         else:
                             break
@@ -204,7 +195,7 @@ class Lexer(object):
                         else:
                             break
                     else:
-                        print ('error:lack of \"')
+                        # print ('error:lack of \"')
                         exit()
                     # self.print_log( '常量' , temp )
                     self.tokens.append(Token(5, temp, self.line))
@@ -253,8 +244,9 @@ class Run_Lexer(object):
             result.append(lexer.tokens[i].value)
             i += 1
     def runLexer(self):
-        sourseFile = open(self.inFile,'r')
+        sourseFile = open(self.inFile, 'r')
         global content
         content = sourseFile.read()
-        print(content)
+        # 需要注掉所有print否则全部输出在终端
+        # print(content)
         self.get_code()

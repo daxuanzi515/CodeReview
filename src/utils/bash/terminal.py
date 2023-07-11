@@ -55,7 +55,7 @@ class Terminal(QMainWindow):
         try:
             os.chdir(directory)  # 切换工作目录
         except Exception as e:
-            print(e)
+            raise e
 
     def getData(self):
         import subprocess

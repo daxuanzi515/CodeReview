@@ -2,8 +2,8 @@ import os
 import re
 from os.path import split
 
-from src.utils.riskcheck.lex import Lexer, Run_Lexer
-
+from src.utils.riskcheck.lex import Run_Lexer
+from src.config.config import Config
 
 class RiskReport(object):
     def __init__(self, fileName='', riskName='', line='', riskLev='', solve=''):
@@ -29,27 +29,6 @@ class RiskFind(object):
         self.validval = []
         self.invalidfun = []
         self.invalidval = []
-
-    # def get_linenum(self, line):
-    #     pattern = re.compile("[0-9]+")
-    #     m = re.search(pattern, line)
-    #     return m.group(0)
-    # def open_demo(self, fileName):
-    #     f = open("demo.txt", "w")
-    #     text = "0$" + fileName + "$\n"
-    #     f.write(text)
-    #     f.close()
-    #     os.system("D:/Desktop/code_review/github/CodeReview/src/utils/riskcheck/lex.yy.exe < " + fileName )
-    #     f = open("demo.txt", "r")
-    #     list = f.readlines()
-    #     # f.close()
-    #     code = []
-    #     for s in list:
-    #         s.rstrip()
-    #         str = s.split("$")
-    #         result = [x.strip() for x in str if x.strip() != '']
-    #         code.append(result)
-    #     return code
 
     def get_all_file(self, filepath):
         self.filelist = []
@@ -98,7 +77,6 @@ class RiskFind(object):
                     index = line.index(v.name)
                     if len(line) > index + 1:
                         if line[index + 1] != "(" and v.line != "line:" + str(line[0]):
-                            print(line)
                             self.validval.append(v)
                     else:
                         if v.line != "line:" + str(line[0]):
@@ -111,17 +89,17 @@ class RiskFind(object):
         if self.validfun != l:
             for f in list(set(self.validfun) - set(l)):
                 self.invalid_find(f, l)
-    def risk_fun(self, file_path = None):
+
+    def risk_fun(self, file_path=None):
         self.fun_name = []
         self.fun_vul = []
         self.fun_sol = []
+        config_obj = Config()
+        config_ini = config_obj.read_config()
         if file_path == None:
-            # ...
-            fun_file = "D:/Desktop/code_review/github/CodeReview/src/utils/riskcheck/fun.txt"
+            fun_file = config_ini['main_project']['project_name'] + config_ini['scanner']['common_rule']
         else:
-            # ..
             pass
-
         f = open(fun_file, "r")
         while True:
             s = f.readline().strip("\n")

@@ -1,6 +1,6 @@
 import random
 
-from PyQt5 import uic, QtWidgets
+from PyQt5 import uic, QtWidgets, QtCore
 from PyQt5.QtGui import QPixmap, QIcon, QCursor
 from PyQt5.QtWidgets import QDialog, QApplication, QTableWidgetItem
 
@@ -12,6 +12,7 @@ from src.config.config import Config
 from src.utils.mysql.mysql import SQL
 
 class DangerManagerWindow(QDialog):
+    set_scanner_rule = QtCore.pyqtSignal()
     def __init__(self, config_ini, ui_data, parent=None):
         super(DangerManagerWindow, self).__init__(parent)
         self.config_ini = config_ini
@@ -44,6 +45,7 @@ class DangerManagerWindow(QDialog):
         # 槽函数
         self.ui.add.clicked.connect(self.addData)
         self.ui.remove.clicked.connect(self.removeData)
+        self.ui.set_rule.clicked.connect(self.setScannerRule)
 
     # 数据库混一起，到时候再查...,不然每多一个用户就要给建一张新表
 
@@ -80,6 +82,10 @@ class DangerManagerWindow(QDialog):
         # (id, func_name, level, solution)
         # 知道当前登录的id 在登录之后记录 然后查表
 
+    def setScannerRule(self):
+        # 发射信号
+        self.set_scanner_rule.emit()
+
     def setAllStyle(self):
         # TODO
         mystyle = """
@@ -101,7 +107,6 @@ class DangerManagerWindow(QDialog):
         }
         """
         pass
-
     # 重写
     def enterEvent(self, event):
         # 鼠标进入部件时更换光标

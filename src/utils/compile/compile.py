@@ -34,12 +34,7 @@ class compile(object):
         sourfileList = self.get_all_file(path)
         res = ' '.join(sourfileList)
         env = os.environ
-        if inifile.endswith(".c"):
-            cmdd = self.clang_path + ' -o ' + self.outfile + " " + res
-            # print(cmdd)
-        elif inifile.endswith(".cpp"):
-            cmdd = 'clang++ ' + res + " -o " + self.outfile
-            # print(cmdd)
+        cmdd = self.clang_path + ' -o ' + self.outfile + " " + res
         p = subprocess.Popen(cmdd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
         return p
 

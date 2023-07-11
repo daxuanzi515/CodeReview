@@ -3,10 +3,9 @@
 int x;
 int main()
 {
+    x = 1;
+	int f;
 	int a;
-
-	int b;
-    x = 1;
     int res1 = add(1,2);
     int res2 = sum(-1,10);
 	printf("char: %c\n", getchar());

@@ -67,10 +67,11 @@ class IndexWindow(QMainWindow):
         # 完整路路径
         self.c_sour_file = None
         self.c_out_file = None
-
-        # 进程
+        # 设置用户id, 用户规则
+        self.user_id = None
+        self.scanner_rule = None
+        # 终端对象
         self.terminal = Terminal(self)
-
         # 对象创建
         # 文件树状列表
         self.file_model = QFileSystemModel()
@@ -135,7 +136,7 @@ class IndexWindow(QMainWindow):
 
     def risk_check(self, fileName):
         riskfind = RiskFind(self.funlist, self.vallist, fileName)
-        riskfind.risk_fun()
+        riskfind.risk_fun(file_path=self.scanner_rule)
         self.ui.show_tree_widget.clear()
         danger = QTreeWidgetItem(self.ui.show_tree_widget)
         danger.setText(0, "风险函数")
@@ -170,19 +171,16 @@ class IndexWindow(QMainWindow):
         name = ''
         if isOk:
             path, name = split(fileName)
-
             # 这里赋值
             self.c_sour_filename = name
             # 展示右侧树状列表
             self.fun_val_tree(path, name)
-
             #风险函数，无效函数，无效变量检测
             self.risk_check(fileName)
 
             with open(fileName, 'r', encoding='utf-8') as file_obj:
                 content = file_obj.read()
             file_obj.close()
-            # print("打开文件内容:", content)
         if path:
             self.file_model.setRootPath(path)
             self.file_model.setNameFilters(["*.c", "*.cpp", "*.h"])
@@ -196,7 +194,6 @@ class IndexWindow(QMainWindow):
             text_editor_obj.addText(content=content)
             self.ui.text_editor.addTab(text_editor_obj, text_editor_obj.filename)
             self.ui.text_editor.setCurrentWidget(text_editor_obj)
-
             # 一些逻辑
             self.enable_operation.emit()
 
@@ -275,6 +272,7 @@ class IndexWindow(QMainWindow):
         # 照样分割路径
         path, name = split(absolute_path)
         self.fun_val_tree(path, name)
+        self.risk_check(absolute_path)
         # 判断当前打开的文件是否已经被打开过...
         # 不能根据内容是否一致判断
         for number in range(self.ui.text_editor.count()):
@@ -375,7 +373,11 @@ class IndexWindow(QMainWindow):
         manager_ui_data, _ = uic.loadUiType(manager_ui_path)
         # 放入配置、ui_data、父亲窗口
         self.fun_manager_window = DangerManagerWindow(config_ini=self.config_ini, ui_data=manager_ui_data, parent=self)
+        self.fun_manager_window.set_scanner_rule.connect(self.s)
         self.fun_manager_window.show()
+
+    def setScannerRule(self):
+        self.scanner_rule = self.config_ini['main_project']['project_name'] + config_ini['scanner']['defined_rule'].format(self.user_id)
 
     def generate_img(self):
         # TODO
@@ -387,10 +389,11 @@ class IndexWindow(QMainWindow):
 
     def terminal_run(self):
         self.terminal.Run()
-
+        pass
     def jump_terminal(self):
         target_index = 1
         self.ui.show_tab_widget.setCurrentIndex(target_index)
+
 
     # 右侧树
     def tree_display(self, funlist, vallist):
@@ -640,7 +643,8 @@ class IndexWindow(QMainWindow):
     def change_tab(self):
         current_tab = self.ui.text_editor.currentWidget()
         if current_tab:
-            self.fun_val_tree(current_tab.filepath,current_tab.filename)
+            self.fun_val_tree(current_tab.filepath, current_tab.filename)
+            # self.risk_check(current_tab.filepath + '/' + current_tab.filename)
         else:
             self.ui.info_tree_widget.clear()
     # override

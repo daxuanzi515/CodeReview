@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog, QFileSystemM
 from qt_material import apply_stylesheet
 
 from src.config.config import Config
+from src.utils.riskcheck.risk import RiskFind
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
 # test
@@ -132,6 +133,36 @@ class IndexWindow(QMainWindow):
         # 编译并运行
         self.ui.compile_run_c.triggered.connect(self.compile_run_c)
 
+    def risk_check(self, fileName):
+        riskfind = RiskFind(self.funlist, self.vallist, fileName)
+        riskfind.risk_fun()
+        self.ui.show_tree_widget.clear()
+        danger = QTreeWidgetItem(self.ui.show_tree_widget)
+        danger.setText(0, "风险函数")
+        self.riskfunlist = riskfind.riskfunlist
+        for i in self.riskfunlist:
+            child = QTreeWidgetItem(danger)
+            child.setText(0, i.fileName)
+            child.setText(1, "line:" + str(i.line))
+            child.setText(2, i.riskName)
+            child.setText(3, i.riskLev)
+            child.setText(4, i.solve)
+        invalidfun = QTreeWidgetItem(self.ui.show_tree_widget)
+        invalidfun.setText(0, "无效函数")
+        for i in riskfind.invalidfun:
+            child = QTreeWidgetItem(invalidfun)
+            child.setText(0, i.fileName)
+            child.setText(1, i.line)
+            child.setText(2, i.name)
+        invalidval = QTreeWidgetItem(self.ui.show_tree_widget)
+        invalidval.setText(0, "无效变量")
+        for i in riskfind.invalidval:
+            child = QTreeWidgetItem(invalidval)
+            child.setText(0, i.fileName)
+            child.setText(1, i.line)
+            child.setText(2, i.name)
+        self.ui.show_tree_widget.expandAll()
+
     def openfile(self):
         test_path = self.config_ini["main_project"]["project_name"] + self.config_ini["test"]["folder_path"]
         fileName, isOk = QFileDialog.getOpenFileName(self, "选取文件", test_path, "C/C++源文件 (*.c *.cpp)")
@@ -144,6 +175,9 @@ class IndexWindow(QMainWindow):
             self.c_sour_filename = name
             # 展示右侧树状列表
             self.fun_val_tree(path, name)
+
+            #风险函数，无效函数，无效变量检测
+            self.risk_check(fileName)
 
             with open(fileName, 'r', encoding='utf-8') as file_obj:
                 content = file_obj.read()
@@ -219,6 +253,9 @@ class IndexWindow(QMainWindow):
             writer.close()
             if current_tab.getStatus():
                 current_tab.changeStatus(False)
+                # 展示右侧树状列表
+        self.fun_val_tree(path, name)
+        self.risk_check(absolute_path)
 
     def save_as(self):
         # 另存为文件 就是复制文件内容到另一个文件去...
@@ -410,9 +447,9 @@ class IndexWindow(QMainWindow):
             ctagsexe = self.config_ini["main_project"]["project_name"] + self.config_ini["ctags"]["ctags"]
             fun_val = funvaluefind(self.c_sour_file, ctagsfile, ctagsexe)
             fun_val.get_fun_value()
-            funlist = fun_val.funlist
-            vallist = fun_val.vallist
-            self.tree_display(funlist, vallist)
+            self.funlist = fun_val.funlist
+            self.vallist = fun_val.vallist
+            self.tree_display(self.funlist, self.vallist)
 
     def compile_c(self):
         # 写自己的类的调用
@@ -606,8 +643,6 @@ class IndexWindow(QMainWindow):
             self.fun_val_tree(current_tab.filepath,current_tab.filename)
         else:
             self.ui.info_tree_widget.clear()
-
-
     # override
     def enterEvent(self, event):
         # 鼠标进入部件时更换光标

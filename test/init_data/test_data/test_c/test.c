@@ -4,6 +4,8 @@ int x;
 int main()
 {
 	int a;
+
+	int b;
     x = 1;
     int res1 = add(1,2);
     int res2 = sum(-1,10);

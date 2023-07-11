@@ -33,8 +33,8 @@ class Terminal(QMainWindow):
         self.TextEditor = parent.ui.terminal_c
         self.LineEditor = parent.ui.input_bash
         self.process = None
-        self.child = None
         self.is_waiting_for_input = False
+
 
     def addData(self, text):
         cursor = self.TextEditor.textCursor()
@@ -58,10 +58,11 @@ class Terminal(QMainWindow):
             print(e)
 
     def getData(self):
+        import subprocess
         msg1 = self.LineEditor.text()
         output = ""
-        cmd = ['cmd.exe','/c']
-        import subprocess
+        cmd = ["cmd.exe", '/c']
+        # 特判 cls/cd
         if msg1 == 'cls':
             self.TextEditor.clear()
         elif 'cd' in msg1:
@@ -111,9 +112,10 @@ class Terminal(QMainWindow):
                     break
                 output += line
             self.is_waiting_for_input = False
+
         header1 = "[in]: "
         header2 = "\n[out]:\n"
-        if output:
+        if output != "":
             content = header1 + msg1 + header2 + output
         else:
             content = header1 + msg1

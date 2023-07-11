@@ -597,6 +597,8 @@ class IndexWindow(QMainWindow):
             self.fun_val_tree(current_tab.filepath,current_tab.filename)
         else:
             self.ui.info_tree_widget.clear()
+
+
     # override
     def enterEvent(self, event):
         # 鼠标进入部件时更换光标

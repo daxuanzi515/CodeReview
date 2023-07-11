@@ -10,5 +10,6 @@
 /test/init_data/test_data/test_py/
 /data/exe/
 /data/tags/
+/data/rules/
 src/utils/compile/clang.exe
 /src/config/

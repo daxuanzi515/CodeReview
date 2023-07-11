@@ -373,7 +373,7 @@ class IndexWindow(QMainWindow):
         manager_ui_data, _ = uic.loadUiType(manager_ui_path)
         # 放入配置、ui_data、父亲窗口
         self.fun_manager_window = DangerManagerWindow(config_ini=self.config_ini, ui_data=manager_ui_data, parent=self)
-        self.fun_manager_window.set_scanner_rule.connect(self.s)
+        self.fun_manager_window.set_scanner_rule.connect(self.setScannerRule)
         self.fun_manager_window.show()
 
     def setScannerRule(self):

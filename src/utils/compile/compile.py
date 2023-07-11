@@ -9,15 +9,23 @@ class compile(object):
         self.outfile = outfile
         self.clang_path = clang_path
 
-    def get_all_file(self,filepath):
+    def get_all_file(self, filepath):
         list = []
         files = os.listdir(filepath)
-        for fi in files:
-            if re.match("(\w*)\.c$",fi) != None:
-                fi_d = filepath + '/' + fi
-                # 如果不目录
-                if not os.path.isdir(fi_d):
-                    list.append(fi_d)
+        if re.match(".*\.c$", self.inifile) is not None:
+            for fi in files:
+                if re.match("(\w*)\.c$",fi) != None:
+                    fi_d = filepath + '/' + fi
+                    # 如果不目录
+                    if not os.path.isdir(fi_d):
+                        list.append(fi_d)
+        elif re.match(".*\.cpp$", self.inifile) is not None:
+            for fi in files:
+                if re.match("(\w*)\.cpp$",fi) != None:
+                    fi_d = filepath + '/' + fi
+                    # 如果不目录
+                    if not os.path.isdir(fi_d):
+                        list.append(fi_d)
         return list
 
     def run_com(self):

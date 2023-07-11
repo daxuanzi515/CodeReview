@@ -416,7 +416,10 @@ class IndexWindow(QMainWindow):
 
     def compile_c(self):
         # 写自己的类的调用
-        self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
+        if self.c_sour_filename.endswith(".c"):
+            self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
+        elif self.c_sour_filename.endswith(".cpp"):
+            self.c_out_filename = self.c_sour_filename.replace(".cpp", ".exe")
         self.c_out_file = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"][
             "exe"] + self.c_out_filename
         clang_path = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"]["clang"]
@@ -444,7 +447,10 @@ class IndexWindow(QMainWindow):
             message_box.exec_()
 
     def run_c(self):
-        self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
+        if self.c_sour_filename.endswith(".c"):
+            self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
+        elif self.c_sour_filename.endswith(".cpp"):
+            self.c_out_filename = self.c_sour_filename.replace(".cpp", ".exe")
         self.c_out_file = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"][
             "exe"] + self.c_out_filename
         arg, ok = QInputDialog.getText(self, "提示", "如果含参数，请输入参数(空格分隔)，否则请关闭本窗口:")
@@ -480,7 +486,10 @@ class IndexWindow(QMainWindow):
                 self.ui.terminal_c.append('[out]: \n' + exe_result)
 
     def compile_run_c(self):
-        self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
+        if self.c_sour_filename.endswith(".c"):
+            self.c_out_filename = self.c_sour_filename.replace(".c", ".exe")
+        elif self.c_sour_filename.endswith(".cpp"):
+            self.c_out_filename = self.c_sour_filename.replace(".cpp", ".exe")
         self.c_out_file = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"][
             "exe"] + self.c_out_filename
         clang_path = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"][

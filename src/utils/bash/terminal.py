@@ -48,15 +48,15 @@ class Terminal(QMainWindow):
             self.t = PrintThread(data=self.getData())
             self.t.start()
         except Exception as e:
-            raise e
-
+            # raise e
+            print(e)
     def change_directory(self, directory):
         import os
         try:
             os.chdir(directory)  # 切换工作目录
         except Exception as e:
-            raise e
-
+            # raise e
+            print(e)
     def getData(self):
         import subprocess
         msg1 = self.LineEditor.text()

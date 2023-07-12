@@ -74,6 +74,51 @@ db_password = 你的密码
 
 不要用它原生的，不然你会掉入问题黑洞......
 
+### 细节
+
+#### 数据库名
+
+`codereview`
+
+#### 数据库表 `user`
+```sql
+user{
+    id: VARCHAR(50),
+    username: VARCHAR(100),
+    password: VARCHAR(200),
+    salt: BINARY(64),
+    private_key: VARCHAR(200)
+}
+```
+#### 数据库表 `danger_func`
+含自增`id`
+```sql
+danger_func{
+    user_id: VARCHAR(50),
+    func_name: VARCHAR(100),
+    level: VARCHAR(50),
+    solution: VARCHAR(300),
+    id: auto_increment
+}
+```
+#### 数据库表`files`
+含自增`id`
+
+公钥`pubilc_key`用于加密,私钥`private_key`存于`user`表用于解密
+
+`report`有三种形式 : `doc/docx` `pdf` `md`
+
+```sql
+files{
+    user_id: VARCHAR(50),
+    report_type: VARCHAR(10),
+    report_path: VARCHAR(200),
+    img_path: VARCHAR(200),
+    log_path: VARCHAR(200),
+    public_key: VARCHAR(200),
+    id: auto_increment
+}
+```
 ## 编辑器
 
 使用`QsciScintilla`

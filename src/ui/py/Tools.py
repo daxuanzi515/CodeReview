@@ -2,7 +2,7 @@ import os
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, QRectF, Qt, QFile
-from PyQt5.QtGui import QPainter, QPaintEvent, QPixmap, QIcon
+from PyQt5.QtGui import QPainter, QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QFrame, QDialog, QVBoxLayout, QPushButton, QLabel, QHBoxLayout
 
 

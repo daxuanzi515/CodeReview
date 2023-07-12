@@ -28,17 +28,10 @@ class DangerManagerWindow(QDialog):
         self.defined_rule_file = None
         # 获取user_id
         if parent is not None:
-            # pass
             self.user_id = parent.user_id
             self.sql_obj = SQL(config_ini=parent.config_ini)
             self.father = parent
             self.defined_rule_file = (self.config_ini['main_project']['project_name']+self.config_ini['scanner']['defined_rule']).format(self.user_id)
-        # else:
-        #     self.user_id = '1111100001'
-        #     self.sql_obj = SQL(config_ini=self.config_ini)
-        #     # self.father = parent
-        #     self.defined_rule_file = (self.config_ini['main_project']['project_name'] + self.config_ini['scanner'][
-        #         'defined_rule']).format(self.user_id)
 
         self.common_rule_file = self.config_ini['main_project']['project_name']+self.config_ini['scanner']['common_rule']
         # 获取表头
@@ -53,18 +46,28 @@ class DangerManagerWindow(QDialog):
         # 设置特定列的相对宽度比例
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
 
+        self.autoLoadRule()
         # 对象
-        self.danger_func_data = []
+        self.danger_func_data = set()
         # 槽函数
         self.ui.add.clicked.connect(self.addData)
         self.ui.remove.clicked.connect(self.removeData)
         self.ui.defined_rule.clicked.connect(self.beforeScanner)
 
-    # 数据库混一起，到时候再查...,不然每多一个用户就要给建一张新表
-
     def removeData(self):
         # 选中的删除 没选的没法删
-        self.ui.database.removeRow(self.ui.database.currentRow())
+        line = self.ui.database.currentRow()
+        if line >= 0:
+            msg = (self.ui.database.item(line, 0).text(), self.ui.database.item(line, 1).text(), self.ui.database.item(line, 2).text())
+            self.danger_func_data.discard(msg)
+            self.ui.database.removeRow(self.ui.database.currentRow())
+            # 修改导入的数据
+            # 先查有没有这个数据 没有就不删除 有则删除
+            self.sql_obj.connect_db()
+            res = self.sql_obj.select(table_name='danger_func', columns='func_name, level, solution', condition=f"user_id={self.user_id}")
+            if res and msg in res:
+                self.sql_obj.delete(table_name='danger_func', condition=f"user_id='{self.user_id}' and func_name='{msg[0]}' and level='{msg[1]}' and solution='{msg[2]}'")
+            self.sql_obj.close_db()
 
     def addData(self):
         # 将新数据插入到第一行
@@ -78,8 +81,7 @@ class DangerManagerWindow(QDialog):
         else:
             self.ui.database.insertRow(0)
             row_input = [name, level, solution]
-            self.danger_func_data.append(row_input)
-            # (row, col, value)
+            self.danger_func_data.add(tuple(row_input))
             for i in range(3):
                 per_item = QTableWidgetItem(row_input[i])
                 self.ui.database.setItem(0, i, per_item)
@@ -90,17 +92,8 @@ class DangerManagerWindow(QDialog):
         message_box.exec_()
 
     def setScannerRule(self):
-        row_num = self.ui.database.rowCount()  # 获取当前的列数
-        data_rule = []
-        sql_data = []
-        for row in range(0, row_num):
-            data_item = self.ui.database.item(row, 0).text() + ' ' + self.ui.database.item(row, 1).text() + ' ' + self.ui.database.item(row, 2).text()
-            data_rule.append(data_item)
-            sql_item = data_item.split(' ')
-            sql_data.append(sql_item)
-
-        # 建立数据表之后实施
         self.sql_obj.connect_db()
+        sql_data = list(self.danger_func_data)
         for item in sql_data:
             per_data = {
                 'user_id': str(self.user_id),
@@ -177,6 +170,41 @@ class DangerManagerWindow(QDialog):
         """
         self.setStyleSheet(mystyle)
 
+    def autoLoadRule(self):
+        common_rules = []
+        with open(self.common_rule_file, 'r', encoding='utf-8') as file:
+            per_data = file.readline()
+            while per_data and per_data != "":
+                common_rule = [
+                    per_data.split("\t")[0],
+                    per_data.split("\t")[1],
+                    per_data.split("\t")[2]]
+                common_rules.append(common_rule)
+                per_data = file.readline()
+            file.close()
+
+        for per_rule in common_rules:
+            current_row = self.ui.database.rowCount()
+            self.ui.database.insertRow(current_row)
+            for i in range(3):
+                per_item = QTableWidgetItem(per_rule[i])
+                self.ui.database.setItem(current_row, i, per_item)
+
+        self.sql_obj.connect_db()
+        res = self.sql_obj.select(table_name='danger_func', columns='user_id, func_name, level, solution', condition=f"user_id='{self.user_id}'")
+        self.sql_obj.close_db()
+
+        if res != ():
+            for item in res:
+                self.ui.database.insertRow(0)
+                for i in range(3):
+                    per_item = QTableWidgetItem(item[i+1])
+                    self.ui.database.setItem(0, i, per_item)
+        else:
+            pass
+
+
+
     # 重写
     def enterEvent(self, event):
         # 鼠标进入部件时更换光标
@@ -188,7 +216,7 @@ class DangerManagerWindow(QDialog):
         # 鼠标离开部件时，恢复默认光标样式
         self.unsetCursor()
 
-#
+
 # if __name__ == '__main__':
 #     config_obj = Config()
 #     config_ini = config_obj.read_config()

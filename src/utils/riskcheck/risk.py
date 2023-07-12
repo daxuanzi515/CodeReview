@@ -97,11 +97,14 @@ class RiskFind(object):
         self.fun_sol = []
         config_obj = Config()
         config_ini = config_obj.read_config()
+        fun_file = ""
         if file_path == None:
             fun_file = config_ini['main_project']['project_name'] + config_ini['scanner']['common_rule']
         else:
-            pass
-        f = open(fun_file, "r")
+            print(file_path)
+            fun_file = file_path
+
+        f = open(fun_file, "r", encoding='utf-8')
         while True:
             s = f.readline().strip("\n")
             s = s.strip("\r")

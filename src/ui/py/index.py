@@ -385,7 +385,7 @@ class IndexWindow(QMainWindow):
         self.fun_manager_window.show()
 
     def setScannerRule(self):
-        self.scanner_rule = self.config_ini['main_project']['project_name'] + config_ini['scanner']['defined_rule'].format(self.user_id)
+        self.scanner_rule = (self.config_ini['main_project']['project_name'] + self.config_ini['scanner']['defined_rule']).format(self.user_id)
 
     def generate_img(self):
         # TODO

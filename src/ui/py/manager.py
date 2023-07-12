@@ -132,7 +132,7 @@ class DangerManagerWindow(QDialog):
             input_new_data.append(line_data)
         input_new_data = '\n'.join(input_new_data)
 
-        f = open(self.common_rule_file, 'r')
+        f = open(self.common_rule_file, 'r', encoding='utf-8')
         common_rules = f.read()
         f.close()
 

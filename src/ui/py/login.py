@@ -39,6 +39,10 @@ class LoginWindow(QWidget):
         self.ui.login.clicked.connect(self.login_check)
         self.ui.change.clicked.connect(self.change_password)
 
+        # test
+        # self.ui.username.setText('test1')
+        # self.ui.password.setText('zxcv4321')
+
     def validate_username0(self, username):
         # 用户名不能为空
         if not username:

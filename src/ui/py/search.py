@@ -9,7 +9,6 @@ from PyQt5.QtWidgets import QDialog
 # run
 from .Tools import CustomMessageBox
 
-
 class SearchReplaceWindow(QDialog):
     def __init__(self, config_ini, ui_data, parent=None):
         super(SearchReplaceWindow, self).__init__(parent)

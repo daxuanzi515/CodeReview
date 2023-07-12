@@ -74,13 +74,14 @@ class RiskFind(object):
                             self.validval.append(v)
             for v in self.vallist:
                 if v.name in line and v not in self.validval and v.filepath == fun.filepath:
-                    index = line.index(v.name)
-                    if len(line) > index + 1:
-                        if line[index + 1] != "(" and v.line != "line:" + str(line[0]):
-                            self.validval.append(v)
-                    else:
-                        if v.line != "line:" + str(line[0]):
-                            self.validval.append(v)
+                    if v.father == fun.name or v.father == "":
+                        index = line.index(v.name)
+                        if len(line) > index + 1:
+                            if line[index + 1] != "(" and v.line != "line:" + str(line[0]):
+                                self.validval.append(v)
+                        else:
+                            if v.line != "line:" + str(line[0]):
+                                self.validval.append(v)
             for f in self.funlist:
                 if f.name in line and f not in self.validfun:
                     index = line.index(f.name)
@@ -129,11 +130,12 @@ class RiskFind(object):
                         report.riskLev = self.fun_vul[index]
                         report.solve = self.fun_sol[index]
                         self.riskfunlist.append(report)
+
         for f in self.funlist:
-            if f.name == 'main':
-                main = f
-        self.validfun.append(main)
-        self.invalid_find(main, [])
+            if f.name == "main":
+                self.validfun.append(f)
+            self.invalid_find(f, [])
+
         for f in list(set(self.funlist) - set(self.validfun)):
             inval = InvalidReport()
             inval.fileName = f.filepath

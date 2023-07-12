@@ -59,6 +59,8 @@ class CustomMessageBox(QDialog):
         layout.addWidget(button)
         self.setLayout(layout)
 
+
+# 确认窗口
 class CheckMessage(QDialog):
     # 确认信号
     OK = QtCore.pyqtSignal()

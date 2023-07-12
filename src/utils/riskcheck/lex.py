@@ -10,6 +10,13 @@ TOKEN_STYLE = [
 DETAIL_TOKEN_STYLE = {
     'include': 'INCLUDE',
     'int': 'INT',
+    'break': 'BREAK',
+    'const': 'CONST',
+    'continue': 'CONTINUE',
+    'goto': 'GOTO',
+    'long': 'LONG',
+    'bool': 'BOOL',
+    'void': 'VOID',
     'float': 'FLOAT',
     'char': 'CHAR',
     'double': 'DOUBLE',
@@ -248,5 +255,4 @@ class Run_Lexer(object):
         global content
         content = sourseFile.read()
         # 需要注掉所有print否则全部输出在终端
-        # print(content)
         self.get_code()

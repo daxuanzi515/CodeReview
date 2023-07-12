@@ -1,8 +1,11 @@
 #include<iostream>
 #include "func.h"
-#include<stdio.h>
 #include<string.h>
 using namespace std;
+void test()
+{
+	bool flag = true;
+}
 int main()
 {
     string s = "1234!";

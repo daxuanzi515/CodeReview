@@ -44,7 +44,7 @@ class funvaluefind():
                 fun.line = split_line[4]
                 fun.type = split_line[3]
                 if fun.type == 'l':
-                    fun.val_type = split_line[6].split(":")[-1]
+                    fun.val_type = 'local: ' + split_line[6].split(":")[-1]
                     fun.father = split_line[5].split(":")[-1]
                     self.vallist.append(fun)
                 else:
@@ -63,7 +63,7 @@ class funvaluefind():
                     fun.father = split_line[6]
                     self.vallist.append(fun)
                 elif fun.type == 'l':
-                    fun.val_type = split_line[7].split(":")[-2] + ' ' + split_line[7].split(":")[-1]
+                    fun.val_type = 'local: ' + split_line[7].split(":")[-1]
                     fun.father = split_line[6].split(":")[-1]
                     self.vallist.append(fun)
         for i in self.vallist:

@@ -251,8 +251,12 @@ class IndexWindow(QMainWindow):
             if current_tab.getStatus():
                 current_tab.changeStatus(False)
                 # 展示右侧树状列表
-        self.fun_val_tree(path, name)
-        self.risk_check(absolute_path)
+        if name.endswith(".c") or name.endswith(".cpp") or name.endswith(".h"):
+            self.fun_val_tree(path, name)
+            self.risk_check(absolute_path)
+        else:
+            self.ui.info_tree_widget.clear()
+            self.ui.show_tree_widget.clear()
 
     def save_as(self):
         # 另存为文件 就是复制文件内容到另一个文件去...
@@ -271,8 +275,12 @@ class IndexWindow(QMainWindow):
     def create_new_open_tab(self, absolute_path):
         # 照样分割路径
         path, name = split(absolute_path)
-        self.fun_val_tree(path, name)
-        self.risk_check(absolute_path)
+
+        if name.endswith(".c") or name.endswith(".cpp") or name.endswith(".h"):
+            self.fun_val_tree(path, name)
+        else:
+            self.ui.info_tree_widget.clear()
+            self.ui.show_tree_widget.clear()
         # 判断当前打开的文件是否已经被打开过...
         # 不能根据内容是否一致判断
         for number in range(self.ui.text_editor.count()):
@@ -618,7 +626,7 @@ class IndexWindow(QMainWindow):
         self.unit_Icon_Shortcut(self.ui.new_file, 'ui_new_file', 'Ctrl+N')
         self.unit_Icon_Shortcut(self.ui.save, 'ui_save', 'Ctrl+S')
         self.unit_Icon_Shortcut(self.ui.save_as, 'ui_save_as', 'Ctrl+Shift+S')
-        self.unit_Icon_Shortcut(self.ui.remove, 'ui_remove', 'Delete')
+        self.unit_Icon_Shortcut(self.ui.remove, 'ui_remove', 'Ctrl+E')
         self.unit_Icon_Shortcut(self.ui.close_tab, 'ui_close_tab', 'Ctrl+W')
         self.unit_Icon_Shortcut(self.ui.close_tabs, 'ui_close_tabs', 'Ctrl+Shift+W')
         self.unit_Icon_Shortcut(self.ui.undo, 'ui_undo', 'Ctrl+Z')
@@ -643,10 +651,16 @@ class IndexWindow(QMainWindow):
     def change_tab(self):
         current_tab = self.ui.text_editor.currentWidget()
         if current_tab:
-            self.fun_val_tree(current_tab.filepath, current_tab.filename)
-            # self.risk_check(current_tab.filepath + '/' + current_tab.filename)
+            absolute_path = current_tab.filepath + '/' + current_tab.filename
+            if current_tab.filename.endswith(".c") or current_tab.filename.endswith(".cpp") or current_tab.filename.endswith(".h"):
+                self.fun_val_tree(current_tab.filepath, current_tab.filename)
+                self.risk_check(absolute_path)
+            else:
+                self.ui.info_tree_widget.clear()
+                self.ui.show_tree_widget.clear()
         else:
             self.ui.info_tree_widget.clear()
+            self.ui.show_tree_widget.clear()
     # override
     def enterEvent(self, event):
         # 鼠标进入部件时更换光标
@@ -668,26 +682,26 @@ class IndexWindow(QMainWindow):
         self.ui.backto.setStyleSheet(
             f"QPushButton {{ border-image: url({self.ui_back_to});background-color: transparent; }}")
 
-#
-# if __name__ == '__main__':
-#     app = QApplication([])
-#     apply_stylesheet(app, theme='light_lightgreen_500.xml', invert_secondary=True)
-#     config_obj = Config()
-#     config_ini = config_obj.read_config()
-#     ui_path = config_ini['main_project']['project_name'] + config_ini['ui']['index_ui']
-#     ui_data, _ = uic.loadUiType(ui_path)
-#     index_window = IndexWindow(config_ini=config_ini, ui_data=ui_data)
-#
-#     # 获取屏幕的大小和窗口的大小
-#     screen_geometry = QApplication.desktop().screenGeometry()
-#     window_geometry = index_window.geometry()
-#
-#     # 计算窗口在屏幕上的位置
-#     x = (screen_geometry.width() - window_geometry.width()) // 2
-#     y = (screen_geometry.height() - window_geometry.height()) // 2
-#
-#     # 设置窗口的位置
-#     index_window.move(x, y)
-#
-#     index_window.show()
-#     app.exec_()
+
+if __name__ == '__main__':
+    app = QApplication([])
+    apply_stylesheet(app, theme='light_lightgreen_500.xml', invert_secondary=True)
+    config_obj = Config()
+    config_ini = config_obj.read_config()
+    ui_path = config_ini['main_project']['project_name'] + config_ini['ui']['index_ui']
+    ui_data, _ = uic.loadUiType(ui_path)
+    index_window = IndexWindow(config_ini=config_ini, ui_data=ui_data)
+
+    # 获取屏幕的大小和窗口的大小
+    screen_geometry = QApplication.desktop().screenGeometry()
+    window_geometry = index_window.geometry()
+
+    # 计算窗口在屏幕上的位置
+    x = (screen_geometry.width() - window_geometry.width()) // 2
+    y = (screen_geometry.height() - window_geometry.height()) // 2
+
+    # 设置窗口的位置
+    index_window.move(x, y)
+
+    index_window.show()
+    app.exec_()

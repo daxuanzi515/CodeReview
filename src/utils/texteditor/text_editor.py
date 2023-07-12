@@ -135,6 +135,7 @@ class TextEditorWidget(QWidget):
     # 得到当前文本
     def getText(self):
         content = self.__editor.text()
+        content = content.replace('\r', '')
         return content
 
     # 得到编辑器当前状态

@@ -56,6 +56,9 @@ class SearchReplaceWindow(QDialog):
         self.ui.Behind_r.clicked.connect(self.jump_to_down_)
 
     def replace_single_string(self):
+        self.replace_pos.clear()
+        self.select_replace_pos.clear()
+
         init_word = self.ui.input_r.currentText()
         replace_word = self.ui.input_r_.currentText()
         # 加入待选列表
@@ -87,6 +90,8 @@ class SearchReplaceWindow(QDialog):
                     self.replace_pos = [pos]
 
     def replace_all_string(self):
+        self.replace_pos.clear()
+        self.select_replace_pos.clear()
         init_word = self.ui.input_r.currentText()
         replace_word = self.ui.input_r_.currentText()
         # 加入待选列表

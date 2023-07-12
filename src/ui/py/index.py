@@ -1,23 +1,28 @@
 import os
 from os.path import split
-
+import matplotlib.pyplot as plt
+import subprocess
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QFile
 from PyQt5.QtGui import QIcon, QPixmap, QCursor
-from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog, QFileSystemModel, QMessageBox, QTreeWidgetItem, QInputDialog
+from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog, QFileSystemModel, QMessageBox, QTreeWidgetItem, QInputDialog, QPushButton
 from qt_material import apply_stylesheet
 
 from src.config.config import Config
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
 # test
-from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
+from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage
 from search import SearchReplaceWindow
 from manager import DangerManagerWindow
 
 # utils
 from src.utils.ctags.fun_value_find import funvaluefind
 from src.utils.compile.compile import compile, comrun, run
+from src.utils.report.generate_report import Generate2Word
+from src.utils.report.generate_img import PieChartGenerator
+from src.utils.report.convert import Convert
+
 
 
 # run
@@ -66,6 +71,7 @@ class IndexWindow(QMainWindow):
         # 完整路路径
         self.c_sour_file = None
         self.c_out_file = None
+        self.template_file = self.config_ini["main_project"]["project_name"] +self.config_ini["report"]["tpl_path"]
 
         # 进程
         self.terminal = Terminal(self)
@@ -341,12 +347,63 @@ class IndexWindow(QMainWindow):
         self.fun_manager_window.show()
 
     def generate_img(self):
-        # TODO
-        pass
+        datas = [
+            {"func": "Risk Function 1", "path": "Path 1", "lines": 10, "remedy": "Solution 1", "rank": "High"},
+            {"func": "Risk Function 1", "path": "Path 1", "lines": 10, "remedy": "Solution 1", "rank": "Low"},
+            {"func": "Risk Function 1", "path": "Path 1", "lines": 10, "remedy": "Solution 1", "rank": "High"},
+            {"func": "Risk Function 1", "path": "Path 1", "lines": 10, "remedy": "Solution 1", "rank": "Medium"},
+            {"func": "Risk Function 1", "path": "Path 1", "lines": 10, "remedy": "Solution 1", "rank": "High"},
+        ]
+        demo=PieChartGenerator(datas=datas, config_ini = self.config_ini)
+        demo.generate_image()
+        plt.show()
 
     def generate_report(self):
-        # TODO
-        pass
+        message = GenerateFileMessage(icon=QIcon(self.ui_icon), text='选择导出文件类型:')
+        message.docx.connect(self.docx_file)
+        message.md.connect(self.md_file)
+
+        message.exec_()
+
+    def docx_file(self):
+        rep = Convert(self.template_file, self.config_ini)
+        docx_path = rep.generate_report()
+        if docx_path:
+            path, name = split(docx_path)
+            message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
+            message.exec_()
+    def md_file(self):
+        rep = Convert(self.template_file, self.config_ini)
+        docx_path = rep.generate_report()
+        md_path = rep.convert_to_md(docx_path)
+        os.remove(docx_path)
+        f = open(md_path, 'r', encoding='utf-8')
+        list_ = f.readlines()
+        f.close()
+        new_list = []
+        for item in list_:
+            if item != '\n':
+                if '.png' in item or 'height' in item:
+                    continue
+                new_list.append(item)
+        path, name = split(rep.target_img)
+        new_list.append('\n')
+        new_list.append('    ![]({})\n'.format(name))
+        f = open(md_path, 'w', encoding='utf-8')
+        f.writelines(new_list)
+        f.close()
+
+        if md_path:
+            path, name = split(md_path)
+            message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
+            message.exec_()
+
+
+
+
+
+
+
 
     def terminal_run(self):
         self.terminal.Run()
@@ -593,7 +650,10 @@ class IndexWindow(QMainWindow):
 
     def change_tab(self):
         current_tab = self.ui.text_editor.currentWidget()
-        self.fun_val_tree(current_tab.filepath,current_tab.filename)
+        if current_tab:
+            self.fun_val_tree(current_tab.filepath,current_tab.filename)
+        else:
+            self.ui.info_tree_widget.clear()
 
     # override
     def enterEvent(self, event):

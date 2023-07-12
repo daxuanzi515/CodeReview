@@ -10,5 +10,7 @@
 /test/init_data/test_data/test_py/
 /data/exe/
 /data/tags/
+/data/reports/
 src/utils/compile/clang.exe
+src/utils/report/pandoc.exe
 /src/config/

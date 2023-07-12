@@ -162,3 +162,56 @@ class RemoveMessage(QDialog):
         except:
             print('删除失败！')
             self.accept()
+
+class GenerateFileMessage(QDialog):
+    # docx pdf md 信号
+    docx = QtCore.pyqtSignal()
+    pdf = QtCore.pyqtSignal()
+    md = QtCore.pyqtSignal()
+    def __init__(self, icon, text, parent=None):
+        super().__init__(parent)
+        self.icon = icon
+        self.setWindowTitle("提示")
+        self.setWindowIcon(icon)
+        self.setFixedSize(280, 100)  # 设置对话框的固定大小
+        v_layout = QVBoxLayout(self)
+        h_layout = QHBoxLayout()
+        label = QLabel(text)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        label.setAlignment(Qt.AlignCenter)  # 将文本水平和垂直居中显示
+        v_layout.addWidget(label)
+
+        # Add buttons
+        docx_button = QPushButton('Docx')
+        pdf_button = QPushButton('PDF')
+        markdown_button = QPushButton('Markdown')
+
+
+        docx_button.clicked.connect(self.docx_)
+        markdown_button.clicked.connect(self.md_)
+        pdf_button.clicked.connect(self.pdf_)
+
+        h_layout.addWidget(docx_button)
+        h_layout.addWidget(pdf_button)
+        h_layout.addWidget(markdown_button)
+        v_layout.addLayout(h_layout)
+
+    def docx_(self):
+        self.docx.emit()
+        self.accept()
+    def pdf_(self):
+        self.pdf.emit()
+        self.accept()
+
+
+    def md_(self):
+        self.md.emit()
+        self.accept()
+
+
+
+
+
+
+
+

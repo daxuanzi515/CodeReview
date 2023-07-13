@@ -72,6 +72,8 @@ class IndexWindow(QMainWindow):
         self.invalidval = None
         # 模板文件
         self.template_file = self.config_ini["main_project"]["project_name"] + self.config_ini["report"]["tpl_path"]
+        self.md_template_file = self.config_ini["main_project"]["project_name"] + self.config_ini["report"][
+            "md_template_path"]
         # 设置用户id, 用户规则
         self.user_id = None
         self.scanner_rule = None
@@ -396,7 +398,6 @@ class IndexWindow(QMainWindow):
     def setScannerRule(self):
         self.scanner_rule = (self.config_ini['main_project']['project_name'] + self.config_ini['scanner']['defined_rule']).format(self.user_id)
 
-# TODO
     def generate_img(self):
         riskdatas = []
         for i in self.riskfunlist:
@@ -439,22 +440,16 @@ class IndexWindow(QMainWindow):
             file_path = invaliddatas[0]['path']
         else:
             file_path = None
-        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path)
+        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
         docx_path = rep.generate_report()
-
-        def open_now():
-            url = QUrl.fromLocalFile(docx_path)
-            QDesktopServices.openUrl(url)
-        def laterview():
-            pass
 
         if docx_path:
             path, name = split(docx_path)
             message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
             message.exec_()
             mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
-            mess.openn.connect(open_now)
-            mess.later.connect(laterview)
+            mess.openn.connect(lambda : self.open_now(docx_path))
+            mess.later.connect(self.laterview)
             mess.exec_()
 
 
@@ -476,26 +471,19 @@ class IndexWindow(QMainWindow):
             file_path = invaliddatas[0]['path']
         else:
             file_path = None
-        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path)
+        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
         docx_path = rep.generate_report()
         pdf_path = rep.convert_to_pdf(docx_path)
         os.remove(docx_path)
-        def open_now():
-            cmd = "start " + pdf_path
-            os.system(cmd)
-
-        def laterview():
-            pass
         if pdf_path:
             path, name = split(pdf_path)
             message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
             message.exec_()
 
             mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
-            mess.openn.connect(open_now)
-            mess.later.connect(laterview)
+            mess.openn.connect(lambda : self.open_now(pdf_path))
+            mess.later.connect(self.laterview)
             mess.exec_()
-
 
     def md_file(self):
         riskdatas = []
@@ -515,44 +503,24 @@ class IndexWindow(QMainWindow):
             file_path = invaliddatas[0]['path']
         else:
             file_path = None
-        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path)
-        docx_path = rep.generate_report()
-        md_path = rep.convert_to_md(docx_path)
-        os.remove(docx_path)
-        f = open(md_path, 'r', encoding='utf-8')
-        list_ = f.readlines()
-        f.close()
-        new_list = []
-        for item in list_:
-            if item != '\n':
-                if '.png' in item or 'height' in item:
-                    continue
-                new_list.append(item)
-        path, name = split(rep.target_img)
-        new_list.append('\n')
-        new_list.append('    ![]({})\n'.format(name))
-        f = open(md_path, 'w', encoding='utf-8')
-        f.writelines(new_list)
-        f.close()
-
-        def open_now():
-            cmd = "start " + md_path
-            os.system(cmd)
-
-        def laterview():
-            pass
+        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
+        md_path = rep.convert_to_md()
         if md_path:
             path, name = split(md_path)
             message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
             message.exec_()
 
             mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
-            mess.openn.connect(open_now)
-            mess.later.connect(laterview)
+            mess.openn.connect(lambda:self.open_now(md_path))
+            mess.later.connect(self.laterview)
             mess.exec_()
 
+    def open_now(self, file_path):
+        url = QUrl.fromLocalFile(file_path)
+        QDesktopServices.openUrl(url)
 
-    # TODO
+    def laterview(self):
+        pass
 
     def terminal_run(self):
         self.terminal.Run()
@@ -560,7 +528,6 @@ class IndexWindow(QMainWindow):
     def jump_terminal(self):
         target_index = 1
         self.ui.show_tab_widget.setCurrentIndex(target_index)
-
 
     # 右侧树
     def tree_display(self, funlist, vallist):
@@ -660,10 +627,9 @@ class IndexWindow(QMainWindow):
             self.c_out_filename = self.c_sour_filename.replace(".cpp", ".exe")
         self.c_out_file = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"][
             "exe"] + self.c_out_filename
-        arg, ok = QInputDialog.getText(self, "提示", "如果含参数，请输入参数(空格分隔)，否则请关闭本窗口:")
+        arg, ok = QInputDialog.getText(self, "提示", "如果含参数，请输入参数(空格分隔)，否则请点击ok:")
         if arg and ok:
             # 这里终端命令输入要新写逻辑，不能直接操控 然后要控制终端所在的目录
-
             runn = run(self.c_out_file, arg=arg)
             exe_result = runn.run_run()
             if exe_result == False:
@@ -730,7 +696,6 @@ class IndexWindow(QMainWindow):
                 message_box.exec_()
             else:
                 self.ui.terminal_c.append('[out]: \n' + result)
-
 
     def enable_operate(self):
         for i in self.ui.file_manager.actions():
@@ -860,25 +825,25 @@ class IndexWindow(QMainWindow):
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
 
-if __name__ == '__main__':
-    app = QApplication([])
-    apply_stylesheet(app, theme='light_lightgreen_500.xml', invert_secondary=True)
-    config_obj = Config()
-    config_ini = config_obj.read_config()
-    ui_path = config_ini['main_project']['project_name'] + config_ini['ui']['index_ui']
-    ui_data, _ = uic.loadUiType(ui_path)
-    index_window = IndexWindow(config_ini=config_ini, ui_data=ui_data)
-
-    # 获取屏幕的大小和窗口的大小
-    screen_geometry = QApplication.desktop().screenGeometry()
-    window_geometry = index_window.geometry()
-
-    # 计算窗口在屏幕上的位置
-    x = (screen_geometry.width() - window_geometry.width()) // 2
-    y = (screen_geometry.height() - window_geometry.height()) // 2
-
-    # 设置窗口的位置
-    index_window.move(x, y)
-
-    index_window.show()
-    app.exec_()
+# if __name__ == '__main__':
+#     app = QApplication([])
+#     apply_stylesheet(app, theme='light_lightgreen_500.xml', invert_secondary=True)
+#     config_obj = Config()
+#     config_ini = config_obj.read_config()
+#     ui_path = config_ini['main_project']['project_name'] + config_ini['ui']['index_ui']
+#     ui_data, _ = uic.loadUiType(ui_path)
+#     index_window = IndexWindow(config_ini=config_ini, ui_data=ui_data)
+#
+#     # 获取屏幕的大小和窗口的大小
+#     screen_geometry = QApplication.desktop().screenGeometry()
+#     window_geometry = index_window.geometry()
+#
+#     # 计算窗口在屏幕上的位置
+#     x = (screen_geometry.width() - window_geometry.width()) // 2
+#     y = (screen_geometry.height() - window_geometry.height()) // 2
+#
+#     # 设置窗口的位置
+#     index_window.move(x, y)
+#
+#     index_window.show()
+#     app.exec_()

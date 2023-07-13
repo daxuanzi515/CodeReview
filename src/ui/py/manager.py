@@ -4,9 +4,9 @@ from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
 from src.utils.mysql.mysql import SQL
 # run
-# from .Tools import CheckMessage, CustomMessageBox
+from .Tools import CheckMessage, CustomMessageBox
 # test
-from Tools import CheckMessage, CustomMessageBox
+# from Tools import CheckMessage, CustomMessageBox
 
 
 class DangerManagerWindow(QDialog):

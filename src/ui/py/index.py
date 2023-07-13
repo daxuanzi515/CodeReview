@@ -16,14 +16,14 @@ from src.utils.riskcheck.risk import RiskFind
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
 # test
-from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
-from search import SearchReplaceWindow
-from manager import DangerManagerWindow
+# from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
+# from search import SearchReplaceWindow
+# from manager import DangerManagerWindow
 
 # run
-# from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
-# from .search import SearchReplaceWindow
-# from .manager import DangerManagerWindow
+from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
+from .search import SearchReplaceWindow
+from .manager import DangerManagerWindow
 
 class IndexWindow(QMainWindow):
     # 定义可操作信号 不可操作信号

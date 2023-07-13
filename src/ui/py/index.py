@@ -1,30 +1,29 @@
 import os
 from os.path import split
-
 from PyQt5 import uic, QtCore
-from PyQt5.QtCore import QFile
-from PyQt5.QtGui import QIcon, QPixmap, QCursor
+from PyQt5.QtCore import QFile, QUrl
+from PyQt5.QtGui import QIcon, QPixmap, QCursor, QDesktopServices
 from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog, QFileSystemModel, QMessageBox, QTreeWidgetItem, QInputDialog
 from qt_material import apply_stylesheet
-
+# config
 from src.config.config import Config
+# utils
+from src.utils.ctags.fun_value_find import funvaluefind
+from src.utils.compile.compile import compile, comrun, run
+from src.utils.report.generate_img import PieChartGenerator
+from src.utils.report.convert import Convert
 from src.utils.riskcheck.risk import RiskFind
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
 # test
-# from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
-# from search import SearchReplaceWindow
-# from manager import DangerManagerWindow
-
-# utils
-from src.utils.ctags.fun_value_find import funvaluefind
-from src.utils.compile.compile import compile, comrun, run
-
+from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
+from search import SearchReplaceWindow
+from manager import DangerManagerWindow
 
 # run
-from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
-from .search import SearchReplaceWindow
-from .manager import DangerManagerWindow
+# from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
+# from .search import SearchReplaceWindow
+# from .manager import DangerManagerWindow
 
 class IndexWindow(QMainWindow):
     # 定义可操作信号 不可操作信号
@@ -67,9 +66,17 @@ class IndexWindow(QMainWindow):
         # 完整路路径
         self.c_sour_file = None
         self.c_out_file = None
+        # 无效变量函数
+        self.riskfunlist = None
+        self.invalidfun = None
+        self.invalidval = None
+        # 模板文件
+        self.template_file = self.config_ini["main_project"]["project_name"] + self.config_ini["report"]["tpl_path"]
         # 设置用户id, 用户规则
         self.user_id = None
         self.scanner_rule = None
+        # 文件夹设置建立
+        self.create_nested_folders()
         # 终端对象
         self.terminal = Terminal(self)
         # 对象创建
@@ -150,6 +157,7 @@ class IndexWindow(QMainWindow):
             child.setText(4, i.solve)
         invalidfun = QTreeWidgetItem(self.ui.show_tree_widget)
         invalidfun.setText(0, "无效函数")
+        self.invalidfun = riskfind.invalidfun
         for i in riskfind.invalidfun:
             child = QTreeWidgetItem(invalidfun)
             child.setText(0, i.fileName)
@@ -157,6 +165,7 @@ class IndexWindow(QMainWindow):
             child.setText(2, i.name)
         invalidval = QTreeWidgetItem(self.ui.show_tree_widget)
         invalidval.setText(0, "无效变量")
+        self.invalidval = riskfind.invalidval
         for i in riskfind.invalidval:
             child = QTreeWidgetItem(invalidval)
             child.setText(0, i.fileName)
@@ -387,13 +396,163 @@ class IndexWindow(QMainWindow):
     def setScannerRule(self):
         self.scanner_rule = (self.config_ini['main_project']['project_name'] + self.config_ini['scanner']['defined_rule']).format(self.user_id)
 
+# TODO
     def generate_img(self):
-        # TODO
-        pass
+        riskdatas = []
+        for i in self.riskfunlist:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
+            riskdatas.append(data_dict)
+        invaliddatas = []
+        for i in self.invalidfun:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
+            invaliddatas.append(data_dict)
+        for i in self.invalidval:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
+            invaliddatas.append(data_dict)
+        demo = PieChartGenerator(riskdatas=riskdatas, invaliddatas=invaliddatas, config_ini=self.config_ini)
+        img_path = demo.generate_image()
+        url = QUrl.fromLocalFile(img_path)
+        QDesktopServices.openUrl(url)
 
     def generate_report(self):
-        # TODO
-        pass
+        message = GenerateFileMessage(icon=QIcon(self.ui_icon), text='选择导出文件类型:')
+        message.docx.connect(self.docx_file)
+        message.md.connect(self.md_file)
+        message.pdf.connect(self.pdf_file)
+        message.exec_()
+
+    def docx_file(self):
+        riskdatas = []
+        for i in self.riskfunlist:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
+            riskdatas.append(data_dict)
+        invaliddatas = []
+        for i in self.invalidfun:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
+            invaliddatas.append(data_dict)
+        for i in self.invalidval:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
+            invaliddatas.append(data_dict)
+        if riskdatas is not None:
+            file_path = invaliddatas[0]['path']
+        elif invaliddatas is not None:
+            file_path = invaliddatas[0]['path']
+        else:
+            file_path = None
+        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path)
+        docx_path = rep.generate_report()
+
+        def open_now():
+            url = QUrl.fromLocalFile(docx_path)
+            QDesktopServices.openUrl(url)
+        def laterview():
+            pass
+
+        if docx_path:
+            path, name = split(docx_path)
+            message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
+            message.exec_()
+            mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
+            mess.openn.connect(open_now)
+            mess.later.connect(laterview)
+            mess.exec_()
+
+
+    def pdf_file(self):
+        riskdatas = []
+        for i in self.riskfunlist:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
+            riskdatas.append(data_dict)
+        invaliddatas = []
+        for i in self.invalidfun:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
+            invaliddatas.append(data_dict)
+        for i in self.invalidval:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
+            invaliddatas.append(data_dict)
+        if riskdatas is not None:
+            file_path = invaliddatas[0]['path']
+        elif invaliddatas is not None:
+            file_path = invaliddatas[0]['path']
+        else:
+            file_path = None
+        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path)
+        docx_path = rep.generate_report()
+        pdf_path = rep.convert_to_pdf(docx_path)
+        os.remove(docx_path)
+        def open_now():
+            cmd = "start " + pdf_path
+            os.system(cmd)
+
+        def laterview():
+            pass
+        if pdf_path:
+            path, name = split(pdf_path)
+            message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
+            message.exec_()
+
+            mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
+            mess.openn.connect(open_now)
+            mess.later.connect(laterview)
+            mess.exec_()
+
+
+    def md_file(self):
+        riskdatas = []
+        for i in self.riskfunlist:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
+            riskdatas.append(data_dict)
+        invaliddatas = []
+        for i in self.invalidfun:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
+            invaliddatas.append(data_dict)
+        for i in self.invalidval:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
+            invaliddatas.append(data_dict)
+        if riskdatas is not None:
+            file_path = invaliddatas[0]['path']
+        elif invaliddatas is not None:
+            file_path = invaliddatas[0]['path']
+        else:
+            file_path = None
+        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path)
+        docx_path = rep.generate_report()
+        md_path = rep.convert_to_md(docx_path)
+        os.remove(docx_path)
+        f = open(md_path, 'r', encoding='utf-8')
+        list_ = f.readlines()
+        f.close()
+        new_list = []
+        for item in list_:
+            if item != '\n':
+                if '.png' in item or 'height' in item:
+                    continue
+                new_list.append(item)
+        path, name = split(rep.target_img)
+        new_list.append('\n')
+        new_list.append('    ![]({})\n'.format(name))
+        f = open(md_path, 'w', encoding='utf-8')
+        f.writelines(new_list)
+        f.close()
+
+        def open_now():
+            cmd = "start " + md_path
+            os.system(cmd)
+
+        def laterview():
+            pass
+        if md_path:
+            path, name = split(md_path)
+            message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
+            message.exec_()
+
+            mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
+            mess.openn.connect(open_now)
+            mess.later.connect(laterview)
+            mess.exec_()
+
+
+    # TODO
 
     def terminal_run(self):
         self.terminal.Run()
@@ -682,6 +841,24 @@ class IndexWindow(QMainWindow):
         self.ui.backto.setStyleSheet(
             f"QPushButton {{ border-image: url({self.ui_back_to});background-color: transparent; }}")
 
+    def create_nested_folders(self):
+        import os
+        # 绝对路径
+        base_folder = self.config_ini['main_project']['project_name']
+        # 嵌套文件夹列表
+        nested_folders = [
+            'data/exe',
+            'data/reports/pdf',
+            'data/reports/md',
+            'data/reports/img',
+            'data/reports/docx',
+            'data/rules',
+            'data/tags'
+        ]
+        for folder in nested_folders:
+            folder_path = os.path.join(base_folder, folder)
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
 
 if __name__ == '__main__':
     app = QApplication([])

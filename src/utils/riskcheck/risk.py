@@ -101,7 +101,6 @@ class RiskFind(object):
         if file_path == None:
             fun_file = config_ini['main_project']['project_name'] + config_ini['scanner']['common_rule']
         else:
-            print(file_path)
             fun_file = file_path
 
         f = open(fun_file, "r", encoding='utf-8')

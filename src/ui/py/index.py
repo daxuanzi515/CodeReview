@@ -71,6 +71,7 @@ class IndexWindow(QMainWindow):
         self.c_sour_file = None
         self.c_out_file = None
         self.template_file = self.config_ini["main_project"]["project_name"] + self.config_ini["report"]["tpl_path"]
+        self.md_template_file = self.config_ini["main_project"]["project_name"] + self.config_ini["report"]["md_template_path"]
         # 设置用户id, 用户规则
         self.user_id = None
         self.scanner_rule = None
@@ -512,10 +513,10 @@ class IndexWindow(QMainWindow):
             file_path = invaliddatas[0]['path']
         else:
             file_path = None
-        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path)
-        docx_path = rep.generate_report()
-        md_path = rep.convert_to_md(docx_path)
-        os.remove(docx_path)
+        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
+        # docx_path = rep.generate_report()
+        md_path = rep.convert_to_md()
+        # os.remove(docx_path)
         f = open(md_path, 'r', encoding='utf-8')
         list_ = f.readlines()
         f.close()

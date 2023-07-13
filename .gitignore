@@ -13,4 +13,3 @@
 /data/reports/
 src/utils/compile/clang.exe
 src/utils/report/pandoc.exe
-/src/config/

@@ -70,6 +70,7 @@ class IndexWindow(QMainWindow):
         self.riskfunlist = None
         self.invalidfun = None
         self.invalidval = None
+        self.leakval = None
         # 模板文件
         self.template_file = self.config_ini["main_project"]["project_name"] + self.config_ini["report"]["tpl_path"]
         self.md_template_file = self.config_ini["main_project"]["project_name"] + self.config_ini["report"][
@@ -173,6 +174,15 @@ class IndexWindow(QMainWindow):
             child.setText(0, i.fileName)
             child.setText(1, i.line)
             child.setText(2, i.name)
+        leakoutrisk = QTreeWidgetItem(self.ui.show_tree_widget)
+        leakoutrisk.setText(0, "内存泄露")
+        self.leakval = riskfind.leakval
+        for i in self.leakval:
+            child = QTreeWidgetItem(leakoutrisk)
+            child.setText(0, i.fileName)
+            child.setText(1, i.line)
+            child.setText(2, i.name)
+            child.setText(4, i.type)
         self.ui.show_tree_widget.expandAll()
 
     def openfile(self):

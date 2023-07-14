@@ -3,11 +3,12 @@ import os
 import random
 import re
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QByteArray
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QWidget, QSizePolicy
 from PyQt5 import QtCore
 from cryptography.fernet import Fernet
+from gvcode import VFCode
 from pyqt5_plugins.examplebutton import QtWidgets
 
 from src.utils.mysql.mysql import SQL
@@ -58,9 +59,17 @@ class RegisterWindow(QWidget):
         self.ui.password2.setEchoMode(QtWidgets.QLineEdit.Password)
         # 创建类对象
         self.sql_obj = SQL(config_ini=config_ini)
-
+        self.code, self.img_data = self.change_img()
+        self.img_data = self.img_data.split(',')[1]
+        pixmap = QPixmap()
+        pixmap.loadFromData(self.Buffer_Trans(self.img_data))  # 从图片数据加载Pixmap
+        self.ui.img.setPixmap(pixmap)  # 设置QLabel的Pixmap
         # 槽函数
         self.ui.Register.clicked.connect(self.register_check)
+
+        self.ui.img.setMouseTracking(True)
+        self.ui.img.mousePressEvent = self.Img_Clicked
+        self.ui.img.mouseDoubleClickEvent = self.Img_Clicked
 
     def validate_username0(self, username):
         # 用户名不能为空
@@ -101,6 +110,11 @@ class RegisterWindow(QWidget):
             return "两次输入的密码不一致"
         return ""
 
+    def validate_code(self, code):
+        if code.lower() != self.code.lower():
+            return '验证码输入错误'
+        return ""
+
     def show_success_message(self):
         # 创建自定义消息框
         message_box = CustomMessageBox(
@@ -125,6 +139,7 @@ class RegisterWindow(QWidget):
         username = self.ui.username.text()
         password = self.ui.password.text()
         password2 = self.ui.password2.text()
+        code = self.ui.code.text()
 
         error_messages = []
 
@@ -148,6 +163,10 @@ class RegisterWindow(QWidget):
         if error_message:
             error_messages.append(error_message)
 
+        error_message = self.validate_code(code)
+        if error_message:
+            error_messages.append(error_message)
+
         if error_messages:
             error_message = "\n".join(error_messages)
             self.show_error_message(error_message)
@@ -163,7 +182,7 @@ class RegisterWindow(QWidget):
             self.ui.username.clear()
             self.ui.password.clear()
             self.ui.password2.clear()
-
+            self.ui.code.clear()
 
     # 密钥生成
     def generate_key(self):
@@ -220,6 +239,60 @@ class RegisterWindow(QWidget):
         # 切换按钮的背景图片为初始图片
         self.ui.backto.setStyleSheet(
             f"QPushButton {{ border-image: url({self.ui_back_to});background-color: transparent; }}")
+
+    def generate_random_code(self):
+        import random
+        import string
+        # 定义包含大小写字母和数字的字符集
+        characters = string.ascii_letters + string.digits
+        # 生成六位随机组合
+        code = ''.join(random.choice(characters) for _ in range(6))
+        return code
+
+    def change_img(self):
+        vc = VFCode(
+            width=200,  # 图片宽度
+            height=200,  # 图片高度
+            fontsize=30,  # 字体尺寸
+            font_color_values=[
+                '#ffffff',
+                '#000000',
+                '#3e3e3e',
+                '#ff1107',
+                '#1bff46',
+                '#ffbf13',
+                '#235aff'
+            ],  # 字体颜色值
+            font_background_value='#ffffff',  # 背景颜色值
+            draw_dots=False,  # 是否画干扰点
+            dots_width=1,  # 干扰点宽度
+            draw_lines=True,  # 是否画干扰线
+            lines_width=1,  # 干扰线宽度
+            mask=False,  # 是否使用磨砂效果
+            font='arial.ttf'  # 字体 内置可选字体 arial.ttf calibri.ttf simsun.ttc
+        )
+
+        # 自定义验证码
+        init_code = self.generate_random_code()
+        vc.generate(init_code)
+        return vc.get_img_base64()
+
+
+    def Buffer_Trans(self, input_data):
+        input_bytes = bytes(input_data, encoding='utf-8')
+        image_data = QByteArray.fromBase64(input_bytes)
+        return image_data
+
+    def choose_other_one(self):
+        self.code, self.img_data = self.change_img()
+        self.img_data = self.img_data.split(',')[1]
+        pixmap = QPixmap()
+        pixmap.loadFromData(self.Buffer_Trans(self.img_data))  # 从图片数据加载Pixmap
+        self.ui.img.setPixmap(pixmap)  # 设置QLabel的Pixmap
+
+    def Img_Clicked(self, event):
+        if event.button() == Qt.LeftButton:
+            self.choose_other_one()
 
     # show的时候渲染动画
     def showEvent(self, event):

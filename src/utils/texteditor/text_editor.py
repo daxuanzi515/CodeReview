@@ -212,6 +212,12 @@ class TextEditorWidget(QWidget):
                                       QColor('#4169E1'))
             self.__editor.fillIndicatorRange(start_line, start_index, end_line, end_index, indicator_number)
 
+    def clear_all_indicator_sign(self):
+        indicator_number = 1  # 指示器的编号
+        lines = self.__editor.lines()-1
+        indexs = self.__editor.lineLength(lines)
+        self.__editor.clearIndicatorRange(0, 0, lines, indexs, indicator_number)
+
     def getSelectionState(self):
         return self.__editor.getSelection()
 

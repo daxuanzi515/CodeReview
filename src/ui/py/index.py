@@ -395,7 +395,13 @@ class IndexWindow(QMainWindow):
         search_ui_data, _ = uic.loadUiType(search_ui_path)
         # 放入配置、ui_data、父亲窗口
         self.search_replace_window = SearchReplaceWindow(config_ini=self.config_ini, ui_data=search_ui_data, parent=self)
+        self.search_replace_window.clear_indicator.connect(self.clear_all_indicator_sign)
         self.search_replace_window.show()
+
+    def clear_all_indicator_sign(self):
+        current_tab = self.ui.text_editor.currentWidget()
+        if current_tab:
+            current_tab.clear_all_indicator_sign()
 
     def fun_manager(self):
         manager_ui_path = self.config_ini['main_project']['project_name'] + self.config_ini['ui']['manage_ui']

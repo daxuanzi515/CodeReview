@@ -267,7 +267,7 @@ QTreeView::branch:open:has-children
     <addaction name="separator"/>
     <addaction name="generate_img"/>
     <addaction name="generate_report"/>
-    <addaction name="separator"/>
+    <addaction name="check_report"/>
    </widget>
    <widget class="QMenu" name="c_operator">
     <property name="title">
@@ -382,6 +382,11 @@ QTreeView::branch:open:has-children
   <action name="remove">
    <property name="text">
     <string>删除</string>
+   </property>
+  </action>
+  <action name="check_report">
+   <property name="text">
+    <string>查看报告</string>
    </property>
   </action>
  </widget>

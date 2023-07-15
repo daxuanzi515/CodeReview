@@ -167,7 +167,6 @@ class RiskFind(object):
             fun_file = config_ini['main_project']['project_name'] + config_ini['scanner']['common_rule']
         else:
             fun_file = file_path
-
         f = open(fun_file, "r", encoding='utf-8')
         while True:
             s = f.readline().strip("\n")

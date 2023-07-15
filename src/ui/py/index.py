@@ -132,6 +132,8 @@ class IndexWindow(QMainWindow):
         self.ui.generate_img.triggered.connect(self.generate_img)
         # 生成报告
         self.ui.generate_report.triggered.connect(self.generate_report)
+        # 查看报告
+        self.ui.check_report.triggered.connect(self.check_report)
         # 终端命令
         self.ui.terminal.triggered.connect(self.jump_terminal)
         self.ui.input_bash.returnPressed.connect(self.terminal_run)
@@ -538,6 +540,11 @@ class IndexWindow(QMainWindow):
     def laterview(self):
         pass
 
+    # TODO
+    def check_report(self):
+        pass
+    # add sth
+
     def terminal_run(self):
         self.terminal.Run()
         pass
@@ -778,6 +785,7 @@ class IndexWindow(QMainWindow):
         self.unit_Icon_Shortcut(self.ui.search_replace, 'ui_search', 'Ctrl+F')
         self.unit_Icon_Shortcut(self.ui.generate_img, 'ui_generate_img', 'Ctrl+I')
         self.unit_Icon_Shortcut(self.ui.generate_report, 'ui_report', 'Ctrl+R')
+        self.unit_Icon_Shortcut(self.ui.check_report, 'ui_check_report', 'Ctrl+L')
         self.unit_Icon_Shortcut(self.ui.terminal, 'ui_terminal', 'Ctrl+T')
         self.unit_Icon_Shortcut(self.ui.compiler_c, 'ui_compile', 'Alt+F9')
         self.unit_Icon_Shortcut(self.ui.run_c, 'ui_run', 'Alt+F10')

@@ -4,9 +4,9 @@ from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
 from src.utils.mysql.mysql import SQL
 # run
-from .Tools import CheckMessage, CustomMessageBox
+from .Tools import CheckMessage, CustomMessageBox, DeleteDataMessage
 # test
-# from Tools import CheckMessage, CustomMessageBox
+# from Tools import CheckMessage, CustomMessageBox, DeleteDataMessage
 
 
 class DangerManagerWindow(QDialog):
@@ -51,8 +51,13 @@ class DangerManagerWindow(QDialog):
         self.danger_func_data = set()
         # 槽函数
         self.ui.add.clicked.connect(self.addData)
-        self.ui.remove.clicked.connect(self.removeData)
+        self.ui.remove.clicked.connect(self.beforeDelete)
         self.ui.defined_rule.clicked.connect(self.beforeScanner)
+
+    def beforeDelete(self):
+        message = DeleteDataMessage(QIcon(self.ui_icon))
+        message.OK.connect(self.removeData)
+        message.exec_()
 
     def removeData(self):
         # 选中的删除 没选的没法删
@@ -68,6 +73,8 @@ class DangerManagerWindow(QDialog):
             if res and msg in res:
                 self.sql_obj.delete(table_name='danger_func', condition=f"user_id='{self.user_id}' and func_name='{msg[0]}' and level='{msg[1]}' and solution='{msg[2]}'")
             self.sql_obj.close_db()
+            message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text='删除完成！')
+            message.exec_()
 
     def addData(self):
         # 将新数据插入到第一行
@@ -90,6 +97,8 @@ class DangerManagerWindow(QDialog):
         message_box = CheckMessage(icon=QIcon(self.ui_icon), text='您添加的规则将被写入数据库并作为下一次审计的附加规则，是否导入规则？')
         message_box.OK.connect(self.setScannerRule)
         message_box.exec_()
+        message_box_ = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text='导入规则完成！')
+        message_box_.exec_()
 
     def setScannerRule(self):
         self.sql_obj.connect_db()

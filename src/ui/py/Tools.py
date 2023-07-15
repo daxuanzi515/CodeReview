@@ -186,10 +186,10 @@ class RemoveMessage(QDialog):
         file_path = os.path.normpath(self.complete_path)
         try:
             send2trash(file_path)
-            print('删除成功！')
+            # print('删除成功！')
             self.accept()
         except:
-            print('删除失败！')
+            # print('删除失败！')
             self.accept()
 
 class GenerateFileMessage(QDialog):
@@ -270,4 +270,31 @@ class OpenFileMessage(QDialog):
         self.accept()
     def later_(self):
         self.later.emit()
+        self.accept()
+
+class DeleteDataMessage(QDialog):
+    OK = QtCore.pyqtSignal()
+    def __init__(self, icon, parent=None):
+        super().__init__(parent)
+        self.icon = icon
+        self.setWindowTitle("提示")
+        self.setWindowIcon(icon)
+        self.setFixedSize(280, 100)  # 设置对话框的固定大小
+        v_layout = QVBoxLayout(self)
+        h_layout = QHBoxLayout()
+        label = QLabel("是否从数据库删除当前数据？")
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        label.setAlignment(Qt.AlignCenter)  # 将文本水平和垂直居中显示
+        v_layout.addWidget(label)
+        label.setWordWrap(True)  # 设置标签的文本可换行
+        button1 = QPushButton('删除')
+        button2 = QPushButton('取消')
+        button1.clicked.connect(self.run)
+        button2.clicked.connect(self.reject)
+        h_layout.addWidget(button1)
+        h_layout.addWidget(button2)
+        v_layout.addLayout(h_layout)
+
+    def run(self):
+        self.OK.emit()
         self.accept()

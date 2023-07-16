@@ -1,9 +1,11 @@
 import re
+
+from PyQt5 import Qsci, QtCore
 from PyQt5.Qsci import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
+from src.config.config import Config
 
 class MeQsciScintilla(QsciScintilla):
     # 继承编辑器类 重写键盘按键方法
@@ -29,8 +31,16 @@ class MeQsciScintilla(QsciScintilla):
 
 
 class TextEditorWidget(QWidget):
+    gotoDeclarationSign = QtCore.pyqtSignal()
+    gotoDefinitionSign = QtCore.pyqtSignal()
+    gotoCallExpressSign = QtCore.pyqtSignal()
+
     def __init__(self, filename, filepath):
         super(TextEditorWidget, self).__init__(parent=None)
+        # 配置
+        config_obj = Config()
+        self.config_ini = config_obj.read_config()
+
         # 可访问成员变量
         self.filename = filename
         self.filepath = filepath
@@ -65,6 +75,12 @@ class TextEditorWidget(QWidget):
         # 自动补全选项在下面
         self.__editor.setCallTipsPosition(QsciScintilla.CallTipsBelowText)
         self.__editor.setCallTipsVisible(0)
+
+        # 菜单
+        # 设置默认菜单为自定义菜单
+        self.__editor.setContextMenuPolicy(Qt.CustomContextMenu)
+        # 设置触发
+        self.__editor.customContextMenuRequested.connect(self.show_context_menu)
 
         autocompletions = [
             'include', 'using', 'namespace', 'std',
@@ -118,6 +134,110 @@ class TextEditorWidget(QWidget):
         self.__editor.setMarginsForegroundColor(QColor("#006400"))
         # 默认未修改
         self.__editor.setModified(False)
+
+    def show_context_menu(self, point):
+        self.context_menu = self.__editor.createStandardContextMenu()
+        # 添加默认选项
+        self.context_menu.insertSeparator(self.context_menu.actions()[0])
+
+
+        ui_icon = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_turn_to']
+
+        action_goto_declaration = QAction("转到声明", self)
+        action_goto_declaration.setIcon(QIcon(ui_icon))
+        action_goto_declaration.triggered.connect(self.gotoDeclaration)
+        action_goto_definition = QAction("转到定义", self)
+        action_goto_definition.setIcon(QIcon(ui_icon))
+        action_goto_definition.triggered.connect(self.gotoDefinition)
+        action_goto_call_express = QAction("转到调用", self)
+        action_goto_call_express.setIcon(QIcon(ui_icon))
+        action_goto_call_express.triggered.connect(self.gotoCallExpress)
+        # 分隔符
+        self.context_menu.insertSeparator(self.context_menu.actions()[0])
+        self.context_menu.insertAction(self.context_menu.actions()[0], action_goto_declaration)
+        self.context_menu.insertAction(self.context_menu.actions()[1], action_goto_definition)
+        self.context_menu.insertAction(self.context_menu.actions()[2], action_goto_call_express)
+        # 应用
+        self.context_menu.exec_(self.__editor.mapToGlobal(point))
+
+    def gotoDeclaration(self):
+        self.gotoDeclarationSign.emit()
+
+    def gotoDefinition(self):
+        self.gotoDefinitionSign.emit()
+
+    def gotoCallExpress(self):
+        self.gotoCallExpressSign.emit()
+
+    def highlight_function_declaration(self, positions):
+        # 传入的是整个位置数据....
+        indicator_number = 1  # 指示器的编号
+        lines = self.__editor.lines() - 1
+        indexs = self.__editor.lineLength(lines)
+        indicator_color = QColor('#f05b72')  # 蔷薇色
+        if positions:
+            self.highlight_handle(positions, lines, indexs, indicator_number, indicator_color)
+
+    def highlight_function_definition(self, positions):
+        # 传入的是整个位置数据....
+        indicator_number = 2  # 指示器的编号
+        lines = self.__editor.lines() - 1
+        indexs = self.__editor.lineLength(lines)
+        indicator_color = QColor('#ed1941')  # 赤色
+        if positions:
+            self.highlight_handle(positions, lines, indexs, indicator_number, indicator_color)
+
+    def highlight_function_call_express(self, positions):
+        # 传入的是整个位置数据....
+        indicator_number = 3  # 指示器的编号
+        lines = self.__editor.lines() - 1
+        indexs = self.__editor.lineLength(lines)
+        indicator_color = QColor('#f47920')  # 橙色
+        if positions:
+            self.highlight_handle(positions, lines, indexs, indicator_number, indicator_color)
+
+    def highlight_handle(self, positions, lines, indexs, indicator_number, indicator_color):
+        self.__editor.SendScintilla(QsciScintilla.SCI_SETINDICATORCURRENT, indicator_number)
+        # 清除所有指示器的色块填充
+        for i in range(1, 4):
+            self.__editor.clearIndicatorRange(0, 0, lines, indexs, i)
+        self.__editor.SendScintilla(QsciScintilla.SCI_INDICATORCLEARRANGE, 0,
+                                    self.__editor.SendScintilla(QsciScintilla.SCI_GETLINECOUNT))
+
+        for start_line, start_index, end_line, end_index in positions:
+            self.__editor.SendScintilla(QsciScintilla.SCI_INDICSETSTYLE, indicator_number,
+                                        QsciScintilla.INDIC_CONTAINER)
+            self.__editor.SendScintilla(QsciScintilla.SCI_INDICSETFORE, indicator_number,
+                                        indicator_color)
+            self.__editor.fillIndicatorRange(start_line, start_index, end_line, end_index, indicator_number)
+            self.__editor.setCursorPosition(end_line, end_index)
+
+    # 获取选中位置文本 返回位置和一模一样文本
+    def getSelected_Position_Content(self):
+        if self.__editor.getSelection() != (-1, -1, -1, -1):
+            selected_text = self.__editor.selectedText()
+            start_line = self.__editor.SendScintilla(Qsci.QsciScintilla.SCI_LINEFROMPOSITION,
+                                                     self.__editor.SendScintilla(
+                                                         Qsci.QsciScintilla.SCI_GETSELECTIONSTART))  # 设置起始行号为当前选中文本所在行
+            start_index = self.__editor.SendScintilla(Qsci.QsciScintilla.SCI_GETCOLUMN, self.__editor.SendScintilla(
+                Qsci.QsciScintilla.SCI_GETSELECTIONSTART))  # 设置起始索引为当前选中文本的起始位置
+            end_line = self.__editor.SendScintilla(Qsci.QsciScintilla.SCI_LINEFROMPOSITION, self.__editor.SendScintilla(
+                Qsci.QsciScintilla.SCI_GETSELECTIONEND))  # 设置结束行号为当前选中文本的结束行
+            end_index = self.__editor.SendScintilla(Qsci.QsciScintilla.SCI_GETCOLUMN, self.__editor.SendScintilla(
+                Qsci.QsciScintilla.SCI_GETSELECTIONEND))  # 设置结束索引为当前选中文本的结束位置
+            return [(start_line, start_index, end_line, end_index)], selected_text
+
+    def getSelectdFunctionName(self, input_string):
+        import re
+        pattern = r'\b(\w+)\s*\('
+        match = re.search(pattern, input_string)
+        if match:
+            return match.group(1)
+        words = re.findall(r'\b\w+\b', input_string)  # 提取字符串中的单词列表
+        for word in words:
+            if re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', word):  # 判断单词是否符合函数名的命名规则
+                return word  # 返回第一个符合要求的单词作为函数名
+        return None
 
     # 这里是添加内容
     def addText(self, content):
@@ -195,26 +315,26 @@ class TextEditorWidget(QWidget):
 
     def highlight_text(self, positions):
         start_line, start_index, end_line, end_index = positions
-        self.__editor.setSelectionBackgroundColor(QColor('#4169E1')) # 蓝
-        self.__editor.setSelectionForegroundColor(QColor('#FF8C00')) # 橘
+        self.__editor.setSelectionBackgroundColor(QColor('#4169E1'))  # 蓝
+        self.__editor.setSelectionForegroundColor(QColor('#FF8C00'))  # 橘
         self.__editor.setSelection(start_line, start_index, end_line, end_index)
 
     def multi_highlight_text(self, positions):
         indicator_number = 1  # 指示器的编号
-        lines = self.__editor.lines()-1
+        lines = self.__editor.lines() - 1
         indexs = self.__editor.lineLength(lines)
         self.__editor.SendScintilla(QsciScintilla.SCI_SETINDICATORCURRENT, indicator_number)
         self.__editor.clearIndicatorRange(0, 0, lines, indexs, indicator_number)
         for start_line, start_index, end_line, end_index in positions:
             self.__editor.SendScintilla(QsciScintilla.SCI_INDICSETSTYLE, indicator_number,
-                                      QsciScintilla.INDIC_CONTAINER)
+                                        QsciScintilla.INDIC_CONTAINER)
             self.__editor.SendScintilla(QsciScintilla.SCI_INDICSETFORE, indicator_number,
-                                      QColor('#4169E1'))
+                                        QColor('#4169E1'))
             self.__editor.fillIndicatorRange(start_line, start_index, end_line, end_index, indicator_number)
 
     def clear_all_indicator_sign(self):
         indicator_number = 1  # 指示器的编号
-        lines = self.__editor.lines()-1
+        lines = self.__editor.lines() - 1
         indexs = self.__editor.lineLength(lines)
         self.__editor.clearIndicatorRange(0, 0, lines, indexs, indicator_number)
 

@@ -254,8 +254,6 @@ QTreeView::branch:open:has-children
     <addaction name="copy"/>
     <addaction name="cut"/>
     <addaction name="paste"/>
-    <addaction name="separator"/>
-    <addaction name="definition"/>
    </widget>
    <widget class="QMenu" name="func">
     <property name="title">

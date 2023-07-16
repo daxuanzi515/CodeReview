@@ -15,6 +15,13 @@ from src.utils.report.convert import Convert
 from src.utils.riskcheck.risk import RiskFind
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
+
+from clang.cindex import Config as cl_config
+# 配置 libclang 路径 不能改
+clang_path = r'E:\formalFiles\LLVM\bin\libclang.dll'
+cl_config.set_library_file(clang_path)
+from src.utils.funcdump.funcdump import FunctionPreprocessor
+
 # test
 # from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
 # from search import SearchReplaceWindow
@@ -78,6 +85,10 @@ class IndexWindow(QMainWindow):
         # 设置用户id, 用户规则
         self.user_id = None
         self.scanner_rule = None
+        # 函数属性存储列表
+        self.header_objs = None
+        self.exclude_header_objs = None
+        self.current_source_path = None
         # 文件夹设置建立
         self.create_nested_folders()
         # 终端对象
@@ -218,6 +229,9 @@ class IndexWindow(QMainWindow):
             self.ui.text_editor.addTab(text_editor_obj, text_editor_obj.filename)
             self.ui.text_editor.setCurrentWidget(text_editor_obj)
             # 一些逻辑
+            text_editor_obj.gotoDeclarationSign.connect(lambda : self.gotoDeclaration(text_editor_obj))
+            text_editor_obj.gotoDefinitionSign.connect(lambda : self.gotoDefinition(text_editor_obj))
+            text_editor_obj.gotoCallExpressSign.connect(lambda : self.gotoCallExpress(text_editor_obj))
             self.enable_operation.emit()
 
     def createfile(self):
@@ -320,6 +334,9 @@ class IndexWindow(QMainWindow):
         text_editor_obj.addText(content=content)
         self.ui.text_editor.addTab(text_editor_obj, text_editor_obj.filename)
         self.ui.text_editor.setCurrentWidget(text_editor_obj)
+        text_editor_obj.gotoDeclarationSign.connect(lambda: self.gotoDeclaration(text_editor_obj))
+        text_editor_obj.gotoDefinitionSign.connect(lambda: self.gotoDefinition(text_editor_obj))
+        text_editor_obj.gotoCallExpressSign.connect(lambda: self.gotoCallExpress(text_editor_obj))
 
     def selectFiles(self):
         # 双击XX获得XX的文件路径
@@ -539,6 +556,192 @@ class IndexWindow(QMainWindow):
 
     def laterview(self):
         pass
+
+    # TODO
+    # 主分析函数
+    def getFuncAnalyzer(self, editor):
+        filename = editor.filename
+        filepath = editor.filepath
+        absolute_path = filepath + '/' + filename
+
+        func_dump = FunctionPreprocessor(absolute_path)
+        headers_tuple = func_dump.headers_runner(absolute_path)  # 可能是函数的声明和定义
+        exclude_headers_objs = func_dump.exclude_headers_runner(absolute_path)  # 可能是函数的定义和调用
+
+        return headers_tuple, exclude_headers_objs
+    # 声明跳转
+    def gotoDeclaration(self, editor):
+        position, selected_text = editor.getSelected_Position_Content()
+        locations = []
+        absolute_path = editor.filepath + '/' + editor.filename
+        # 过滤选中的字符
+        selected_text = editor.getSelectdFunctionName(selected_text)
+
+        # 避免重复读
+        if self.header_objs == None or self.exclude_header_objs == None or self.current_source_path == None: # 初始化
+            self.header_objs, self.exclude_headers_objs = self.getFuncAnalyzer(editor=editor)
+            self.current_source_path = absolute_path
+        elif self.current_source_path and self.current_source_path != absolute_path: # 换文件了
+            self.header_objs, self.exclude_headers_objs = self.getFuncAnalyzer(editor=editor)
+            self.current_source_path = absolute_path
+        else: # 还在同一个文件里...不做任何事
+            pass
+        # 核心代码段
+        location = None
+        header_flag = True
+        if self.header_objs and self.exclude_headers_objs:
+            # 源文件
+            for item in self.exclude_headers_objs.function_declaration_list:
+                if selected_text == item.function_name and item.declared_location is not None:
+                    location = item.declared_location
+                    header_flag = False
+                    break
+            if header_flag:
+                # 头文件
+                current_editor = None
+                for obj in self.header_objs:
+                    source, path, item = obj
+                    for i in item.function_declaration_list:
+                        if selected_text == i.function_name and i.declared_location is not None:
+                            location = i.declared_location
+                            self.create_new_open_tab(path)
+                            current_editor = self.ui.text_editor.currentWidget()
+                            break
+                if location is not None and current_editor is not None:
+                    start_line = location[0] - 1
+                    start_index = location[1] - 1
+                    end_line = location[2] - 1
+                    end_index = location[3] - 1
+                    text_location = [(start_line, start_index, end_line, end_index)]
+                    current_editor.highlight_function_declaration(text_location)
+            else:
+                if location is not None:
+                    start_line = location[0] - 1
+                    start_index = location[1] - 1
+                    end_line = location[2] - 1
+                    end_index = location[3] - 1
+                    text_location = [(start_line, start_index, end_line, end_index)]
+                    editor.highlight_function_declaration(text_location)
+        else:
+            pass
+    # 定义跳转
+    def gotoDefinition(self, editor):
+        position, selected_text = editor.getSelected_Position_Content()
+        locations = []
+        absolute_path = editor.filepath + '/' + editor.filename
+        # 过滤选中的字符
+        selected_text = editor.getSelectdFunctionName(selected_text)
+        # 避免重复读
+        if self.header_objs == None or self.exclude_headers_objs == None or self.current_source_path == None:  # 初始化
+            self.header_objs, self.exclude_headers_objs = self.getFuncAnalyzer(editor=editor)
+            self.current_source_path = absolute_path
+        elif self.current_source_path and self.current_source_path != absolute_path:  # 换文件了
+            self.current_source_path = absolute_path
+        else:  # 还在同一个文件里...不做任何事
+            pass
+        isSource = True
+        # 头文件跳源文件
+        if '.h' in editor.filename or '.hh' in editor.filename:
+            isSource = False
+        # 源文件跳头文件
+        header_flag = True
+        location = None
+        if self.header_objs and self.exclude_headers_objs:
+            if isSource:
+                # 源文件
+                for item in self.exclude_headers_objs.function_definition_list:
+                    if selected_text == item.function_name and item.definition_location is not None:
+                        location = item.definition_location
+                        header_flag = False
+                        break
+                if header_flag:
+                    # 头文件
+                    current_editor = None
+                    for obj in self.header_objs:
+                        source, path, item = obj
+                        for i in item.function_definition_list:
+                            if selected_text == i.function_name and i.definition_location is not None:
+                                location = i.definition_location
+                                self.create_new_open_tab(path)
+                                current_editor = self.ui.text_editor.currentWidget()
+                                break
+
+                    if location is not None and current_editor is not None:
+                        start_line = location[0] - 1
+                        start_index = location[1] - 1
+                        end_line = location[2] - 1
+                        end_index = location[3] - 1
+                        text_location = [(start_line, start_index, end_line, end_index)]
+                        current_editor.highlight_function_definition(text_location)
+                else:
+                    if location is not None:
+                        start_line = location[0] - 1
+                        start_index = location[1] - 1
+                        end_line = location[2] - 1
+                        end_index = location[3] - 1
+                        text_location = [(start_line, start_index, end_line, end_index)]
+                        editor.highlight_function_definition(text_location)
+            else:
+                for item in self.exclude_headers_objs.function_definition_list:
+                    if selected_text == item.function_name and item.definition_location is not None:
+                        location = item.definition_location
+                        break
+                if location is not None:
+                    start_line = location[0] - 1
+                    start_index = location[1] - 1
+                    end_line = location[2] - 1
+                    end_index = location[3] - 1
+                    text_location = [(start_line, start_index, end_line, end_index)]
+                    for obj in self.header_objs:
+                        source, path, item = obj
+                        self.create_new_open_tab(source)
+                        current_editor = self.ui.text_editor.currentWidget()
+                        current_editor.highlight_function_definition(text_location)
+
+    # 调用跳转
+    def gotoCallExpress(self, editor):
+        position, selected_text = editor.getSelected_Position_Content()
+        locations = []
+        absolute_path = editor.filepath + '/' + editor.filename
+        # 过滤选中的字符
+        selected_text = editor.getSelectdFunctionName(selected_text)
+        isSource = True
+        # 头文件跳源文件
+        if '.h' in editor.filename or '.hh' in editor.filename:
+            isSource = False
+        # 避免重复读
+        if self.header_objs == None or self.exclude_headers_objs == None or self.current_source_path == None:  # 初始化
+            self.header_objs, self.exclude_headers_objs = self.getFuncAnalyzer(editor=editor)
+            self.current_source_path = absolute_path
+        elif self.current_source_path and self.current_source_path != absolute_path:  # 换文件了
+            self.current_source_path = absolute_path
+        else:  # 还在同一个文件里...不做任何事
+            pass
+        # 核心代码段
+        location = []
+        if self.exclude_headers_objs:
+            for item in self.exclude_headers_objs.function_callexpress_list:
+                if selected_text == item.function_name and item.call_express_location is not None:
+                    location = item.call_express_location
+                    start_line = location[0] - 1
+                    start_index = location[1] - 1
+                    end_line = location[2] - 1
+                    end_index = location[3] - 1
+                    text_location = (start_line, start_index, end_line, end_index)
+                    locations.append(text_location)
+
+            if isSource:
+                if locations != []:
+                    editor.highlight_function_call_express(locations)
+            else:
+                if locations != []:
+                    for obj in self.header_objs:
+                        source, path, item = obj
+                        self.create_new_open_tab(source)
+                        current_editor = self.ui.text_editor.currentWidget()
+                        current_editor.highlight_function_call_express(locations)
+        else:
+            pass
 
     # TODO
     def check_report(self):
@@ -780,7 +983,6 @@ class IndexWindow(QMainWindow):
         self.unit_Icon_Shortcut(self.ui.copy, 'ui_copy', 'Ctrl+C')
         self.unit_Icon_Shortcut(self.ui.cut, 'ui_cut', 'Ctrl+X')
         self.unit_Icon_Shortcut(self.ui.paste, 'ui_paste', 'Ctrl+V')
-        self.unit_Icon_Shortcut(self.ui.definition, 'ui_turn_to', 'Ctrl+D')
         self.unit_Icon_Shortcut(self.ui.fun_manager, 'ui_manage', 'Ctrl+M')
         self.unit_Icon_Shortcut(self.ui.search_replace, 'ui_search', 'Ctrl+F')
         self.unit_Icon_Shortcut(self.ui.generate_img, 'ui_generate_img', 'Ctrl+I')
@@ -849,25 +1051,25 @@ class IndexWindow(QMainWindow):
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
 
-# if __name__ == '__main__':
-#     app = QApplication([])
-#     apply_stylesheet(app, theme='light_lightgreen_500.xml', invert_secondary=True)
-#     config_obj = Config()
-#     config_ini = config_obj.read_config()
-#     ui_path = config_ini['main_project']['project_name'] + config_ini['ui']['index_ui']
-#     ui_data, _ = uic.loadUiType(ui_path)
-#     index_window = IndexWindow(config_ini=config_ini, ui_data=ui_data)
-#
-#     # 获取屏幕的大小和窗口的大小
-#     screen_geometry = QApplication.desktop().screenGeometry()
-#     window_geometry = index_window.geometry()
-#
-#     # 计算窗口在屏幕上的位置
-#     x = (screen_geometry.width() - window_geometry.width()) // 2
-#     y = (screen_geometry.height() - window_geometry.height()) // 2
-#
-#     # 设置窗口的位置
-#     index_window.move(x, y)
-#
-#     index_window.show()
-#     app.exec_()
+if __name__ == '__main__':
+    app = QApplication([])
+    apply_stylesheet(app, theme='light_lightgreen_500.xml', invert_secondary=True)
+    config_obj = Config()
+    config_ini = config_obj.read_config()
+    ui_path = config_ini['main_project']['project_name'] + config_ini['ui']['index_ui']
+    ui_data, _ = uic.loadUiType(ui_path)
+    index_window = IndexWindow(config_ini=config_ini, ui_data=ui_data)
+
+    # 获取屏幕的大小和窗口的大小
+    screen_geometry = QApplication.desktop().screenGeometry()
+    window_geometry = index_window.geometry()
+
+    # 计算窗口在屏幕上的位置
+    x = (screen_geometry.width() - window_geometry.width()) // 2
+    y = (screen_geometry.height() - window_geometry.height()) // 2
+
+    # 设置窗口的位置
+    index_window.move(x, y)
+
+    index_window.show()
+    app.exec_()

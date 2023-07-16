@@ -13,9 +13,9 @@ from src.utils.riskcheck.risk import RiskFind
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
 # test
-# from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage
-# from search import SearchReplaceWindow
-# from manager import DangerManagerWindow
+from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
+from search import SearchReplaceWindow
+from manager import DangerManagerWindow
 
 # utils
 from src.utils.ctags.fun_value_find import funvaluefind
@@ -25,9 +25,9 @@ from src.utils.report.convert import Convert
 
 
 # run
-from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
-from search import SearchReplaceWindow
-from manager import DangerManagerWindow
+# from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
+# from .search import SearchReplaceWindow
+# from .manager import DangerManagerWindow
 
 class IndexWindow(QMainWindow):
     # 定义可操作信号 不可操作信号
@@ -439,7 +439,7 @@ class IndexWindow(QMainWindow):
             file_path = invaliddatas[0]['path']
         else:
             file_path = None
-        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path)
+        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
         docx_path = rep.generate_report()
         def open_now():
             cmd = "start " + docx_path
@@ -474,7 +474,7 @@ class IndexWindow(QMainWindow):
             file_path = invaliddatas[0]['path']
         else:
             file_path = None
-        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path)
+        rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
         docx_path = rep.generate_report()
         pdf_path = rep.convert_to_pdf(docx_path)
         os.remove(docx_path)

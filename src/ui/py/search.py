@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import QDialog
 # test
 # from Tools import CustomMessageBox
 
-
 # run
 from .Tools import CustomMessageBox
 

@@ -1,0 +1,2 @@
+int ddd();
+void print();

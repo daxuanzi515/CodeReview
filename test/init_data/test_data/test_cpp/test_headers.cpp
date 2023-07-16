@@ -5,9 +5,9 @@ int add(int a,int b)
 {
     return a+b;
 }
-void xxx(int hello)
+void xxx(int bye)
 {
-    int b = hello;
+    int b = bye;
 	printf("xxx: %d\n", b); 
 }
 void sum()
@@ -24,6 +24,10 @@ bool temp(int a)
 void kkk(int a)
 {
     a = 2;
+}
+int test(int i)
+{
+	return 100;
 }
 int main()
 {

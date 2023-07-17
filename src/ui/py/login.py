@@ -6,7 +6,7 @@ from pyqt5_plugins.examplebutton import QtWidgets
 from PyQt5 import QtCore
 from .Tools import WelcomePage, CustomMessageBox
 from src.utils.mysql.mysql import SQL
-
+from src.utils.log.log import Log
 
 class LoginWindow(QWidget):
     # 定义登录成功的信号
@@ -35,6 +35,9 @@ class LoginWindow(QWidget):
         # 创建对象
         self.sql_obj = SQL(config_ini=config_ini)
         self.user_id = None
+        self.log_obj = Log()
+        # 文件夹设置建立
+        self.create_nested_folders()
         # 槽函数
         self.ui.login.clicked.connect(self.login_check)
         self.ui.change.clicked.connect(self.change_password)
@@ -119,6 +122,10 @@ class LoginWindow(QWidget):
             tips = self.verify_password(username=username, password=password)
             if not tips:
                 self.show_success_message()
+                self.log_obj.inputValue(self.user_id, '登录系统成功', '操作安全')
+                logging = self.log_obj.returnString()
+                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
                 self.ui.username.clear()
                 self.ui.password.clear()
                 # 成功之后跳转到主界面IndexWindow 发射登录成功信号
@@ -203,3 +210,23 @@ class LoginWindow(QWidget):
                                                                 Qt.AspectRatioMode.KeepAspectRatio)
         self.welcomepage.background_image = scaled_image
         self.welcomepage.startAnimation()
+
+    def create_nested_folders(self):
+        import os
+        # 绝对路径
+        base_folder = self.config_ini['main_project']['project_name']
+        # 嵌套文件夹列表
+        nested_folders = [
+            'data/exe',
+            'data/reports/pdf',
+            'data/reports/md',
+            'data/reports/img',
+            'data/reports/docx',
+            'data/rules',
+            'data/logs'
+            'data/tags'
+        ]
+        for folder in nested_folders:
+            folder_path = os.path.join(base_folder, folder)
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)

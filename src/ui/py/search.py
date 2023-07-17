@@ -2,14 +2,17 @@ from PyQt5 import Qsci, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QCursor, QPixmap
 from PyQt5.QtWidgets import QDialog
+from src.utils.log.log import Log
 # test
 # from Tools import CustomMessageBox
 
 # run
 from .Tools import CustomMessageBox
 
+
 class SearchReplaceWindow(QDialog):
     clear_indicator = QtCore.pyqtSignal()
+
     def __init__(self, config_ini, ui_data, parent=None):
         super(SearchReplaceWindow, self).__init__(parent)
         self.config_ini = config_ini
@@ -28,6 +31,8 @@ class SearchReplaceWindow(QDialog):
         self.pixmap = QPixmap(self.ui_pointer)
         self.smaller_pixmap = self.pixmap.scaled(24, 24)  # 将图像调整为24*24的尺寸
         self.setWindowIcon(QIcon(self.ui_icon))
+        # 日志
+        self.log_obj = Log()
         # 设置消息对象
         self.current_index = 0  # 查找的位置第一位
         self.current_index_ = 0  # 替换的位置第一位
@@ -93,6 +98,11 @@ class SearchReplaceWindow(QDialog):
                     start_index = end_index - len(replace_word)
                     pos = (start_line, start_index, end_line, end_index)
                     self.replace_pos = [pos]
+
+                    # self.log_obj.inputValue(self.user_id, f'使用单个替换功能', '操作安全')
+                    # logging = self.log_obj.returnString()
+                    # self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                    #                                     + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
 
     def replace_all_string(self):
         self.replace_pos.clear()
@@ -179,7 +189,8 @@ class SearchReplaceWindow(QDialog):
                 if len(input_string) > 1:
                     positions.add(
                         (
-                        found_line, found_index - len(input_string) + 1, found_line, found_index + 1))  # 记录匹配的位置（行号和索引）
+                            found_line, found_index - len(input_string) + 1, found_line,
+                            found_index + 1))  # 记录匹配的位置（行号和索引）
                 else:
                     positions.add(
                         (found_line, found_index, found_line, found_index + len(input_string)))  # 记录匹配的位置（行号和索引）

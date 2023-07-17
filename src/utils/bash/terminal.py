@@ -3,7 +3,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QThread, QEventLoop, QTimer
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QMainWindow
-
+from src.utils.log.log import Log
 
 class PrintThread(QThread):
     signalForText = QtCore.pyqtSignal(str)
@@ -34,7 +34,10 @@ class Terminal(QMainWindow):
         self.LineEditor = parent.ui.input_bash
         self.process = None
         self.is_waiting_for_input = False
+        self.log_obj = Log()
 
+        self.config_ini = parent.config_ini
+        self.user_id = None
 
     def addData(self, text):
         cursor = self.TextEditor.textCursor()
@@ -50,6 +53,7 @@ class Terminal(QMainWindow):
         except Exception as e:
             # raise e
             print(e)
+
     def change_directory(self, directory):
         import os
         try:
@@ -57,6 +61,7 @@ class Terminal(QMainWindow):
         except Exception as e:
             # raise e
             print(e)
+
     def getData(self):
         import subprocess
         msg1 = self.LineEditor.text()
@@ -93,7 +98,7 @@ class Terminal(QMainWindow):
                 self.process.wait()
             except Exception as e:
                 output = str(e)
-        elif '.exe' in msg1 and not self.is_waiting_for_input: # 限制输入参数？？？ 如果不含参数的话就不调用...
+        elif '.exe' in msg1 and not self.is_waiting_for_input:  # 限制输入参数？？？ 如果不含参数的话就不调用...
             self.process = subprocess.Popen(msg1, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                             stderr=subprocess.STDOUT, universal_newlines=True)
             self.is_waiting_for_input = True
@@ -115,6 +120,15 @@ class Terminal(QMainWindow):
 
         header1 = "[in]: "
         header2 = "\n[out]:\n"
+
+        print(self.user_id)
+        self.log_obj.inputValue(self.user_id, f'使用终端输入命令行内容: {msg1}', '操作安全')
+        logging1 = self.log_obj.returnString()
+        self.log_obj.inputValue(self.user_id, f'使用终端获取回显内容: {output}', '操作安全')
+        logging2 = self.log_obj.returnString()
+        self.log_obj.generate_log(logging1 + logging2, (self.config_ini['main_project']['project_name']
+                                                        + self.config_ini['log']['log_file']).format(self.user_id,
+                                                                                                     'Log'))
         if output != "":
             content = header1 + msg1 + header2 + output
         else:

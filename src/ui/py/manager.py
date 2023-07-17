@@ -3,6 +3,7 @@ from PyQt5.QtGui import QPixmap, QIcon, QCursor
 from PyQt5.QtWidgets import QDialog, QTableWidgetItem
 
 from src.utils.mysql.mysql import SQL
+from src.utils.log.log import Log
 # run
 from .Tools import CheckMessage, CustomMessageBox, DeleteDataMessage
 # test
@@ -49,6 +50,7 @@ class DangerManagerWindow(QDialog):
         self.autoLoadRule()
         # 对象
         self.danger_func_data = set()
+        self.log_obj = Log()
         # 槽函数
         self.ui.add.clicked.connect(self.addData)
         self.ui.remove.clicked.connect(self.beforeDelete)
@@ -73,7 +75,12 @@ class DangerManagerWindow(QDialog):
             if res and msg in res:
                 self.sql_obj.delete(table_name='danger_func', condition=f"user_id='{self.user_id}' and func_name='{msg[0]}' and level='{msg[1]}' and solution='{msg[2]}'")
             self.sql_obj.close_db()
-            message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text='删除完成！')
+            self.log_obj.inputValue(self.user_id, f'向风险函数数据库删除了一条数据:{msg}', '操作有风险')
+            logging = self.log_obj.returnString()
+            self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+
+            message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text='删除完成！')
             message.exec_()
 
     def addData(self):
@@ -92,6 +99,10 @@ class DangerManagerWindow(QDialog):
             for i in range(3):
                 per_item = QTableWidgetItem(row_input[i])
                 self.ui.database.setItem(0, i, per_item)
+            self.log_obj.inputValue(self.user_id, f'向风险函数显示表插入了一条数据:{name, level, solution}', '操作安全')
+            logging = self.log_obj.returnString()
+            self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
 
     def beforeScanner(self):
         message_box = CheckMessage(icon=QIcon(self.ui_icon), text='您添加的规则将被写入数据库并作为下一次审计的附加规则，是否导入规则？')
@@ -143,6 +154,10 @@ class DangerManagerWindow(QDialog):
             file.write(common_rules + "\n" + input_new_data)
             file.close()
 
+        self.log_obj.inputValue(self.user_id, '向风险函数数据库里导入了自定义规则', '操作风险')
+        logging = self.log_obj.returnString()
+        self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                            + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
         # 发射信号
         self.set_scanner_rule.emit()
 

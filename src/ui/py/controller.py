@@ -87,6 +87,7 @@ class ControllerMainToOthers:
         self.index_window_object.to_main_window.connect(self.show_main_window)
         self.main_window_object.main_window.hide()
         self.index_window_object.index_window.user_id = user_id
+        self.index_window_object.index_window.terminal.user_id = user_id
         self.index_window_object.index_window.show()
 
 class ControllerOthersToMain:

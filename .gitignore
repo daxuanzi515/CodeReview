@@ -12,4 +12,5 @@
 /data/tags/
 /data/reports/
 /data/rules/
+/data/logs/
 src/utils/compile/clang.exe

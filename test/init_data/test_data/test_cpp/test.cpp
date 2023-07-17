@@ -1,5 +1,9 @@
 #include "test.h"
 #include "test_headers.h"
+int hub(int a, int b)
+{
+    return (a-b);
+}
 int add(int a,int b)
 {
     return a+b;
@@ -27,18 +31,4 @@ void kkk(int a)
 int test(int i)
 {
 	return 100;
-}
-int main()
-{
-    int res = add(1,2);
-    sum();
-    kkk(123);
-    printf("res: %d\n", res);
-    sum();
-	bool flag = temp(100);
-	printf("flag: %d\n", flag);
-    xxx(1223);
-    int res1 = hub(5,1);
-    printf("res1: %d\n", res1);
-    return 0;
 }

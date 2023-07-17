@@ -12,6 +12,7 @@ from gvcode import VFCode
 from pyqt5_plugins.examplebutton import QtWidgets
 
 from src.utils.mysql.mysql import SQL
+from src.utils.log.log import Log
 from .Tools import WelcomePage, CustomMessageBox
 
 
@@ -64,6 +65,10 @@ class RegisterWindow(QWidget):
         pixmap = QPixmap()
         pixmap.loadFromData(self.Buffer_Trans(self.img_data))  # 从图片数据加载Pixmap
         self.ui.img.setPixmap(pixmap)  # 设置QLabel的Pixmap
+
+        # 日志
+        self.user_id = None
+        self.log_obj = Log()
         # 槽函数
         self.ui.Register.clicked.connect(self.register_check)
 
@@ -175,6 +180,10 @@ class RegisterWindow(QWidget):
             ok = self.register_add_user(username=username, password=password)
             if ok:
                 self.show_success_message()
+                self.log_obj.inputValue(self.user_id, '注册成功', '操作安全')
+                logging = self.log_obj.returnString()
+                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
                 # 发生成功注册信号
                 self.register_success.emit()
             else:
@@ -202,6 +211,7 @@ class RegisterWindow(QWidget):
 
     def register_add_user(self, username, password):
         user_id = '10001' + str(random.randint(0, 10000))
+        self.user_id = user_id
         # salt是二进制数
         salt_password, salt = self.hash_password(password)
         # 生成密钥

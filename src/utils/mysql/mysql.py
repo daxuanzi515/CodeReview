@@ -17,6 +17,7 @@ class SQL:
         self.db = None
         self.cursor = None
 
+
     def connect_db(self):
         self.db = pymysql.connect(host=self.host,
                                   port=self.port,

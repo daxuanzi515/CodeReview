@@ -11,7 +11,6 @@ class Convert:
         self.template_file = tpl_file
         self.config_ini = config_ini
         self.target_img = None
-        self.pandoc_path = config_ini['main_project']['project_name'] + config_ini['report']['pandoc_path']
         self.pdf_path = config_ini['main_project']['project_name'] + config_ini['report']['pdf_path']
         self.md_path = config_ini['main_project']['project_name'] + config_ini['report']['markdown_path']
         self.riskdatas = riskdatas

@@ -2,11 +2,9 @@ import os
 import re
 from os.path import split
 
-from clang.cindex import Index, CursorKind, TypeKind
-
-# clang_path = r'E:\formalFiles\LLVM\bin\libclang.dll'
-# Config.set_library_file(clang_path)
-
+from clang.cindex import Config, Index, CursorKind, TypeKind
+clang_path = r'E:\formalFiles\LLVM\bin\libclang.dll'
+Config.set_library_file(clang_path)
 class FunctionDeclaration:
     def __init__(self, function_name=None, declared_location=None, declared_contents=None, return_types=None,
                  parameter_types=None):
@@ -163,6 +161,15 @@ class FunctionDump:
         for item in self.function_callexpress_list:
             print(item)
 
+
+# 头文件和源文件的封装类
+class HeaderInfo:
+    def __init__(self, ):
+        pass
+
+
+
+
 # 封装预处理器 找到源文件未出现的函数声明....在头文件里进行查找...
 class FunctionPreprocessor:
     def __init__(self, file_path, keyword=None):
@@ -200,6 +207,15 @@ class FunctionPreprocessor:
                 dependency = match.group(1)
                 headers.append(dependency)
         return headers
+    # 遍历所有同类型文件
+    def find_all_files(self, filepath):
+        directory, _ = os.path.split(filepath)
+        file_list = []
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.c') or file.endswith('.cpp'):
+                    file_list.append(os.path.abspath(os.path.join(root, file)))
+        return file_list
 
     # 1.2 启动项
     def headers_runner(self, init_filename):
@@ -223,6 +239,102 @@ class FunctionPreprocessor:
         source_path = self.virtualTempFile(init_filename)
         analyzer = FunctionDump(source_path)
         analyzer.analyseLauncher()
-        # analyzer.show_function_details()
+        analyzer.show_function_details()
         os.remove(source_path)
         return analyzer
+
+    def source_runner(self, init_filename):
+        filelist = self.find_all_files(init_filename)
+        source_info_list = []
+
+        for file in filelist:
+            headers_objs = []
+            # 源文件
+            source_path = self.virtualTempFile(file)
+            headers_path = self.find_dependencies(source_path)
+            path, name = split(source_path)
+            for header in headers_path:
+                header_path = path + '/' + header
+                source_path_ = self.virtualTempFile(header_path)
+                headers_analyzer = FunctionDump(source_path_)
+                headers_analyzer.analyseLauncher()
+                # headers_analyzer.show_function_details()
+                headers_objs.append((file, header_path, headers_analyzer))
+                os.remove(source_path_)
+
+            analyzer = FunctionDump(source_path)
+            analyzer.analyseLauncher()
+            os.remove(source_path)
+            # analyzer.show_function_details()
+
+            per_source_info = SourceInfo(filepath=file, source_obj=analyzer, headers_obj_list=headers_objs)
+            source_info_list.append(per_source_info)
+        return source_info_list
+
+    def newHumanJudger(self):
+        init_data = self.source_runner(self.file_path)
+        keyword = self.target_function_name
+
+        for data in init_data:
+            # 文件名
+            filename = data.filepath
+            path, name = split(filename)
+            # 声明
+            function_declaration_list = data.source_obj.function_declaration_list
+            # 定义
+            function_definition_list = data.source_obj.function_definition_list
+            # 调用
+            function_callexpress_list = data.source_obj.function_callexpress_list
+            # 头文件
+            headers_obj_list = data.headers_obj_list
+            print('位于源文件: ', name)
+            print('---声明---')
+            for per_obj in function_declaration_list:
+                if keyword == per_obj.function_name and per_obj.declared_contents:
+                    print(per_obj.declared_contents)
+                    print(per_obj.declared_location)
+                    break
+            print('---定义---')
+            for per_obj in function_definition_list:
+                if keyword == per_obj.function_name and per_obj.definition_contents:
+                    print(per_obj.definition_contents)
+                    print(per_obj.definition_location)
+                    break
+            print('---调用---')
+            for per_obj in function_callexpress_list:
+                if keyword == per_obj.function_name and per_obj.call_express_contents:
+                    print(per_obj.call_express_contents)
+                    print(per_obj.call_express_location)
+                    break
+
+            # 头文件遍历
+            for per_obj in headers_obj_list:
+                filepath, header_path, item = per_obj
+                path, name = split(filepath)
+                path, name_ = split(header_path)
+                print(f'~~~被{name}调用的{name_}~~~')
+                print('---声明---')
+                # 声明
+                for i in item.function_declaration_list:
+                    if i.function_name == keyword and i.declared_contents:
+                        print(i.declared_contents)
+                        print(i.declared_location)
+                        break
+                print('---定义---')
+                for i in item.function_definition_list:
+                    if i.function_name == keyword and i.definition_contents:
+                        print(i.definition_contents)
+                        print(i.definition_location)
+                        break
+
+class SourceInfo:
+    def __init__(self, filepath, source_obj=None, headers_obj_list=None):
+        self.filepath = filepath
+        self.source_obj = source_obj
+        self.headers_obj_list = headers_obj_list
+
+# 为了解决跳转到其他.c/.cpp文件的bug
+if __name__ == "__main__":
+    path = r'D:\PyCharmTest\PyCharmPackets\Models\StaticCodeAnalyzer\FastCodeReview\test\init_data\test_data\test_py\test_clang_ast\call_location\temp_combined_output.cpp'
+    obj = FunctionPreprocessor(path, 'add')
+    obj.exclude_headers_runner(path)

@@ -3,7 +3,7 @@ import os
 from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, QRectF, Qt, QFile
 from PyQt5.QtGui import QPainter, QPaintEvent, QPixmap
-from PyQt5.QtWidgets import QFrame, QDialog, QVBoxLayout, QPushButton, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QFrame, QDialog, QVBoxLayout, QPushButton, QLabel, QHBoxLayout, QCheckBox
 
 
 class WelcomePage(QFrame):
@@ -197,12 +197,13 @@ class GenerateFileMessage(QDialog):
     docx = QtCore.pyqtSignal()
     pdf = QtCore.pyqtSignal()
     md = QtCore.pyqtSignal()
+    encrypt = QtCore.pyqtSignal(bool)
     def __init__(self, icon, text, parent=None):
         super().__init__(parent)
         self.icon = icon
         self.setWindowTitle("提示")
         self.setWindowIcon(icon)
-        self.setFixedSize(350, 100)  # 设置对话框的固定大小
+        self.setFixedSize(450, 200)  # 设置对话框的固定大小
         v_layout = QVBoxLayout(self)
         h_layout = QHBoxLayout()
         label = QLabel(text)
@@ -210,30 +211,42 @@ class GenerateFileMessage(QDialog):
         label.setAlignment(Qt.AlignCenter)  # 将文本水平和垂直居中显示
         v_layout.addWidget(label)
 
+        h_layout.addStretch(1)
+        self.checkbox = QCheckBox('加密文件')
+        h_layout.addWidget(self.checkbox)
+        h_layout.addStretch(1)
+        v_layout.addLayout(h_layout)
+
         # Add buttons
         docx_button = QPushButton('Docx')
         pdf_button = QPushButton('PDF')
         markdown_button = QPushButton('Markdown')
 
-
         docx_button.clicked.connect(self.docx_)
         markdown_button.clicked.connect(self.md_)
         pdf_button.clicked.connect(self.pdf_)
+
 
         h_layout.addWidget(docx_button)
         h_layout.addWidget(pdf_button)
         h_layout.addWidget(markdown_button)
         v_layout.addLayout(h_layout)
+        self.checked = False
+
 
     def docx_(self):
+        self.checked = self.checkbox.isChecked()
         self.docx.emit()
         self.accept()
 
+
     def pdf_(self):
+        self.checked = self.checkbox.isChecked()
         self.pdf.emit()
         self.accept()
 
     def md_(self):
+        self.checked = self.checkbox.isChecked()
         self.md.emit()
         self.accept()
 

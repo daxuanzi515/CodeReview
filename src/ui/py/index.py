@@ -325,7 +325,7 @@ class IndexWindow(QMainWindow):
         # 不能根据内容是否一致判断
         for number in range(self.ui.text_editor.count()):
             tab_item = self.ui.text_editor.widget(number)
-            if tab_item.filepath + '/' + tab_item.filename == absolute_path:
+            if tab_item.filepath == absolute_path:
                 # 就是当前被打开的 什么也不做
                 self.ui.text_editor.setCurrentWidget(tab_item)
                 return

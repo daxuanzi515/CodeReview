@@ -1233,6 +1233,7 @@ class IndexWindow(QMainWindow):
     def change_tab(self):
         current_tab = self.ui.text_editor.currentWidget()
         if current_tab:
+            self.source_data = self.getFuncAnalyzer(editor=current_tab)
             absolute_path = current_tab.filepath + '/' + current_tab.filename
             if current_tab.filename.endswith(".c") or current_tab.filename.endswith(".cpp") or current_tab.filename.endswith(".h"):
                 self.fun_val_tree(current_tab.filepath, current_tab.filename)

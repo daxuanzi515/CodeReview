@@ -32,11 +32,14 @@ int main()
 {
     int res = add(1,2);
     sum();
+	int a;
+	scanf("%d",&a);
+	printf("a: %d\n", a);
     kkk(123);
     printf("res: %d\n", res);
     sum();
-	bool flag = temp(100);
-	printf("flag: %d\n", flag);
+	bool fLAG = temp(100);
+	printf("flag: %d\n", fLAG);
     xxx(1223);
     int res1 = hub(5,1);
     printf("res1: %d\n", res1);

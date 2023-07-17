@@ -266,7 +266,6 @@ class FunctionPreprocessor:
             analyzer.analyseLauncher()
             os.remove(source_path)
             # analyzer.show_function_details()
-
             per_source_info = SourceInfo(filepath=file, source_obj=analyzer, headers_obj_list=headers_objs)
             source_info_list.append(per_source_info)
         return source_info_list

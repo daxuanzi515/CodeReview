@@ -175,6 +175,11 @@ class RegisterWindow(QWidget):
         if error_messages:
             error_message = "\n".join(error_messages)
             self.show_error_message(error_message)
+            self.choose_other_one()
+            self.ui.username.clear()
+            self.ui.password.clear()
+            self.ui.password2.clear()
+            self.ui.code.clear()
         else:
             # 插入数据
             ok = self.register_add_user(username=username, password=password)
@@ -188,6 +193,7 @@ class RegisterWindow(QWidget):
                 self.register_success.emit()
             else:
                 self.show_error_message('用户名重复，用户注册失败!!!')
+            self.choose_other_one()
             self.ui.username.clear()
             self.ui.password.clear()
             self.ui.password2.clear()

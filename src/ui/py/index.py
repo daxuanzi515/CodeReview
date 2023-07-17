@@ -232,6 +232,7 @@ class IndexWindow(QMainWindow):
             self.ui.text_editor.addTab(text_editor_obj, text_editor_obj.filename)
             self.ui.text_editor.setCurrentWidget(text_editor_obj)
             # 一些逻辑
+            self.source_data = self.getFuncAnalyzer(editor=text_editor_obj)
             text_editor_obj.gotoDeclarationSign.connect(lambda : self.gotoDeclaration(text_editor_obj))
             text_editor_obj.gotoDefinitionSign.connect(lambda : self.gotoDefinition(text_editor_obj))
             text_editor_obj.gotoCallExpressSign.connect(lambda : self.gotoCallExpress(text_editor_obj))
@@ -291,6 +292,7 @@ class IndexWindow(QMainWindow):
             if current_tab.getStatus():
                 current_tab.changeStatus(False)
                 # 展示右侧树状列表
+            self.source_data = self.getFuncAnalyzer(editor=current_tab)
         if name.endswith(".c") or name.endswith(".cpp") or name.endswith(".h"):
             self.fun_val_tree(path, name)
             self.risk_check(absolute_path)
@@ -325,8 +327,6 @@ class IndexWindow(QMainWindow):
         # 不能根据内容是否一致判断
         for number in range(self.ui.text_editor.count()):
             tab_item = self.ui.text_editor.widget(number)
-            print(tab_item.filepath)
-            print(absolute_path)
             tab_item_path = os.path.normpath(tab_item.filepath + '/' + tab_item.filename)
 
             if tab_item_path == absolute_path:
@@ -842,7 +842,6 @@ class IndexWindow(QMainWindow):
                         end_index = location[3] - 1
                         text_location = (start_line, start_index, end_line, end_index)
                         locations.append(text_location)
-                print(locations)
                 if not isSource and locations != []:
                     self.create_new_open_tab(filename)
                     another_editor = self.ui.text_editor.currentWidget()
@@ -1077,6 +1076,7 @@ class IndexWindow(QMainWindow):
 
         style_sheet = """
         QTextEdit {
+                font-size: 18px;
                 color: #FF8BFF;
                 background-color: #143113;
                 font-family: "Consolas", monospace;}"""
@@ -1084,6 +1084,7 @@ class IndexWindow(QMainWindow):
 
         style_sheet = """
         QLineEdit {
+                font-size: 18px;
                 color: #FF8BFF;
                 background-color: #143113;
                 font-family: "Consolas", monospace;}"""

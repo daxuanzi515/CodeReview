@@ -7,8 +7,8 @@ void test()
 }
 int main()
 {
+	int u;
     x = 1;
-	int d;
 	int a;
     int res1 = add(1,2);
     int res2 = sum(-1,10);
@@ -17,6 +17,5 @@ int main()
 	printf("a: %d\n",a);
     printf("res1: %d\n",res1);
     printf("res2: %d\n",res2);
-	int hh;
     return 0;
 }

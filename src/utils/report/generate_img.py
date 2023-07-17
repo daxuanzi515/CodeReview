@@ -37,15 +37,6 @@ class PieChartGenerator:
         plt.savefig(img_path)  # 保存饼状图为图像文件
         return img_path
 
-# datas = [
-#             {"func": "Risk Function 1", "path": "Path 1", "lines": 10, "remedy": "Solution 1", "rank": "High"},
-#             {"func": "Risk Function 1", "path": "Path 1", "lines": 10, "remedy": "Solution 1", "rank": "Low"},
-#             {"func": "Risk Function 1", "path": "Path 1", "lines": 10, "remedy": "Solution 1", "rank": "High"},
-#             {"func": "Risk Function 1", "path": "Path 1", "lines": 10, "remedy": "Solution 1", "rank": "Medium"},
-#             {"func": "Risk Function 1", "path": "Path 1", "lines": 10, "remedy": "Solution 1", "rank": "High"},
-#         ]
-# demo=PieChartGenerator(datas=datas)
-# demo.generate_image()
 
 
 

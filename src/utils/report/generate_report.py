@@ -1,7 +1,8 @@
-import os
 import datetime
-from docxtpl import DocxTemplate,InlineImage
+
 from docx.shared import Mm
+from docxtpl import DocxTemplate, InlineImage
+
 from src.utils.report.generate_img import PieChartGenerator
 
 # 根据模板生成一个报告内容
@@ -21,7 +22,6 @@ class Generate2Word:
     def DP(self):
         # 数据处理
         img = PieChartGenerator(riskdatas=self.riskdatas, invaliddatas=self.invalid, config_ini=self.config_ini)
-        # img = PieChartGenerator(datas, self.config_ini)
         folder_path = img.generate_image()
         return folder_path
 
@@ -63,12 +63,4 @@ class Generate2Word:
             table2_data += f'| {self.file_path} | {self.length} | {item["func"]} |\n'
 
         return table0_data, table1_data, table2_data
-        # with open(self.md_template, 'r', encoding='utf-8') as f:
-        #     template = f.read()
-        #     f.close()
-        #
-        # report0 = template.replace('{{table0}}', table0_data)
-        # report1 = report0.replace('{{table1}}', table1_data)
-        # report2 = report1.replace(' {{table2}}', table2_data)
-        # img_path = self.DP()
-        # md_report = report2.replace("{{chart}}", img_path)
+

@@ -1,4 +1,5 @@
-from PyQt5 import Qsci
+from PyQt5 import Qsci, QtCore
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QCursor, QPixmap
 from PyQt5.QtWidgets import QDialog
@@ -10,6 +11,8 @@ from Tools import CustomMessageBox
 # from .Tools import CustomMessageBox
 
 class SearchReplaceWindow(QDialog):
+    clear_indicator = QtCore.pyqtSignal()
+
     def __init__(self, config_ini, ui_data, parent=None):
         super(SearchReplaceWindow, self).__init__(parent)
         self.config_ini = config_ini
@@ -54,6 +57,11 @@ class SearchReplaceWindow(QDialog):
         self.ui.Behind_s.clicked.connect(self.jump_to_down)
         self.ui.Forward_r.clicked.connect(self.jump_to_up_)
         self.ui.Behind_r.clicked.connect(self.jump_to_down_)
+        # 关闭时发送清除指示器标记的信号
+        self.rejected.connect(self.send_clear)
+
+    def send_clear(self):
+        self.clear_indicator.emit()
 
     def replace_single_string(self):
         self.replace_pos.clear()

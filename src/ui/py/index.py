@@ -1,14 +1,21 @@
 import os
+import win32file
 from os.path import split
-import matplotlib.pyplot as plt
-
 from PyQt5 import uic, QtCore
-from PyQt5.QtCore import QFile
-from PyQt5.QtGui import QIcon, QPixmap, QCursor
+from PyQt5.QtCore import QFile, QUrl
+from PyQt5.QtGui import QIcon, QPixmap, QCursor, QDesktopServices
 from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog, QFileSystemModel, QMessageBox, QTreeWidgetItem, QInputDialog
 from qt_material import apply_stylesheet
-
+# config
 from src.config.config import Config
+
+# utils
+from src.utils.ctags.fun_value_find import funvaluefind
+from src.utils.compile.compile import compile, comrun, run
+from src.utils.report.generate_img import PieChartGenerator
+from src.utils.report.convert import Convert
+from src.utils.report.AES_report import AES_report
+
 from src.utils.riskcheck.risk import RiskFind
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
@@ -17,17 +24,11 @@ from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, 
 from search import SearchReplaceWindow
 from manager import DangerManagerWindow
 
-# utils
-from src.utils.ctags.fun_value_find import funvaluefind
-from src.utils.compile.compile import compile, comrun, run
-from src.utils.report.generate_img import PieChartGenerator
-from src.utils.report.convert import Convert
-
-
 # run
 # from .Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
 # from .search import SearchReplaceWindow
 # from .manager import DangerManagerWindow
+
 
 class IndexWindow(QMainWindow):
     # 定义可操作信号 不可操作信号
@@ -70,11 +71,22 @@ class IndexWindow(QMainWindow):
         # 完整路路径
         self.c_sour_file = None
         self.c_out_file = None
+
+        # 无效变量函数
+        self.riskfunlist = None
+        self.invalidfun = None
+        self.invalidval = None
+        self.leakval = None
+        # 模板文件
         self.template_file = self.config_ini["main_project"]["project_name"] + self.config_ini["report"]["tpl_path"]
-        self.md_template_file = self.config_ini["main_project"]["project_name"] + self.config_ini["report"]["md_template_path"]
+        self.md_template_file = self.config_ini["main_project"]["project_name"] + self.config_ini["report"][
+            "md_template_path"]
         # 设置用户id, 用户规则
         self.user_id = None
         self.scanner_rule = None
+        # 文件夹设置建立
+        self.create_nested_folders()
+
         # 终端对象
         self.terminal = Terminal(self)
         # 对象创建
@@ -127,6 +139,9 @@ class IndexWindow(QMainWindow):
         self.ui.generate_img.triggered.connect(self.generate_img)
         # 生成报告
         self.ui.generate_report.triggered.connect(self.generate_report)
+        # 查看报告
+        self.ui.check_report.triggered.connect(self.check_report)
+
         # 终端命令
         self.ui.terminal.triggered.connect(self.jump_terminal)
         self.ui.input_bash.returnPressed.connect(self.terminal_run)
@@ -164,15 +179,20 @@ class IndexWindow(QMainWindow):
         invalidval = QTreeWidgetItem(self.ui.show_tree_widget)
         invalidval.setText(0, "无效变量")
         self.invalidval = riskfind.invalidval
-
-
-
-
         for i in riskfind.invalidval:
             child = QTreeWidgetItem(invalidval)
             child.setText(0, i.fileName)
             child.setText(1, i.line)
             child.setText(2, i.name)
+        leakoutrisk = QTreeWidgetItem(self.ui.show_tree_widget)
+        leakoutrisk.setText(0, "内存泄露")
+        self.leakval = riskfind.leakval
+        for i in self.leakval:
+            child = QTreeWidgetItem(leakoutrisk)
+            child.setText(0, i.fileName)
+            child.setText(1, i.line)
+            child.setText(2, i.name)
+            child.setText(4, i.type)
         self.ui.show_tree_widget.expandAll()
 
     def openfile(self):
@@ -385,8 +405,13 @@ class IndexWindow(QMainWindow):
         search_ui_data, _ = uic.loadUiType(search_ui_path)
         # 放入配置、ui_data、父亲窗口
         self.search_replace_window = SearchReplaceWindow(config_ini=self.config_ini, ui_data=search_ui_data, parent=self)
+        self.search_replace_window.clear_indicator.connect(self.clear_all_indicator_sign)
         self.search_replace_window.show()
 
+    def clear_all_indicator_sign(self):
+        current_tab = self.ui.text_editor.currentWidget()
+        if current_tab:
+            current_tab.clear_all_indicator_sign()
     def fun_manager(self):
         manager_ui_path = self.config_ini['main_project']['project_name'] + self.config_ini['ui']['manage_ui']
         manager_ui_data, _ = uic.loadUiType(manager_ui_path)
@@ -411,17 +436,21 @@ class IndexWindow(QMainWindow):
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
             invaliddatas.append(data_dict)
         demo = PieChartGenerator(riskdatas=riskdatas, invaliddatas=invaliddatas, config_ini=self.config_ini)
-        demo.generate_image()
-        plt.show()
+        img_path = demo.generate_image()
+        url = QUrl.fromLocalFile(img_path)
+        QDesktopServices.openUrl(url)
 
     def generate_report(self):
-        message = GenerateFileMessage(icon=QIcon(self.ui_icon), text='选择导出文件类型:')
-        message.docx.connect(self.docx_file)
-        message.md.connect(self.md_file)
-        message.pdf.connect(self.pdf_file)
-        message.exec_()
+        self.message = GenerateFileMessage(icon=QIcon(self.ui_icon), text='选择导出文件类型以及是否加密')
+        self.message.docx.connect(self.docx_file)
+        self.message.md.connect(self.md_file)
+        self.message.pdf.connect(self.pdf_file)
+        self.message.exec_()
+        # self.checked = message.checked
+
 
     def docx_file(self):
+        self.checked = self.message.checked
         riskdatas = []
         for i in self.riskfunlist:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
@@ -440,23 +469,41 @@ class IndexWindow(QMainWindow):
         else:
             file_path = None
         rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
-        docx_path = rep.generate_report()
-        def open_now():
-            cmd = "start " + docx_path
-            os.system(cmd)
-        def laterview():
-            pass
-        if docx_path:
-            path, name = split(docx_path)
-            message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
-            message.exec_()
-            mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
-            mess.openn.connect(open_now)
-            mess.later.connect(laterview)
-            mess.exec_()
+        self.docx_path = rep.generate_report()
+        aes, encryptor, decryptor = self.initial()
+        if self.docx_path:
+            if self.checked:
+                docx_path1 = aes.AES_encry_docx(encryptor)
+                path, name = split(self.docx_path)
+                message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
+                message.exec_()
+                mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
+                mess.openn.connect(lambda : self.open_now(docx_path1, decryptor, aes))
+                mess.later.connect(lambda : self.laterview(self.docx_path))
+                mess.exec_()
+            else:
+                path, name = split(self.docx_path)
+                message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
+                message.exec_()
+                mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
+                mess.openn.connect(lambda: self.open_now(self.docx_path, None, None))
+                mess.later.connect(lambda: self.laterview(None))
+                mess.exec_()
+
+    def initial(self):
+        if not hasattr(self, 'docx_path'):
+            self.docx_path = None
+        if not hasattr(self, 'pdf_path'):
+            self.pdf_path = None
+        if not hasattr(self, 'md_path'):
+            self.md_path = None
+        demo = AES_report(self.config_ini, self.docx_path, self.pdf_path, self.md_path)
+        a, b = demo.initialize()
+        return demo, a, b
 
 
     def pdf_file(self):
+        self.checked = self.message.checked
         riskdatas = []
         for i in self.riskfunlist:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
@@ -476,26 +523,33 @@ class IndexWindow(QMainWindow):
             file_path = None
         rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
         docx_path = rep.generate_report()
-        pdf_path = rep.convert_to_pdf(docx_path)
+        self.pdf_path = rep.convert_to_pdf(docx_path)
+        aes, encryptor, decryptor = self.initial()
         os.remove(docx_path)
-        def open_now():
-            cmd = "start " + pdf_path
-            os.system(cmd)
+        if self.pdf_path:
+            if self.checked:
+                pdf_path1 = aes.AES_encry_pdf(encryptor)
+                path, name = split(self.pdf_path)
+                message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
+                message.exec_()
+                mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
+                mess.openn.connect(lambda: self.open_now(pdf_path1, decryptor, aes))
+                mess.later.connect(lambda: self.laterview(self.pdf_path))
+                mess.exec_()
+            else:
+                path, name = split(self.pdf_path)
+                message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
+                message.exec_()
+                mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
+                mess.openn.connect(lambda: self.open_now(self.pdf_path, None, None))
+                mess.later.connect(lambda: self.laterview(None))
+                mess.exec_()
 
-        def laterview():
-            pass
-        if pdf_path:
-            path, name = split(pdf_path)
-            message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
-            message.exec_()
 
-            mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
-            mess.openn.connect(open_now)
-            mess.later.connect(laterview)
-            mess.exec_()
 
 
     def md_file(self):
+        self.checked = self.message.checked
         riskdatas = []
         for i in self.riskfunlist:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
@@ -514,43 +568,62 @@ class IndexWindow(QMainWindow):
         else:
             file_path = None
         rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
-        # docx_path = rep.generate_report()
-        md_path = rep.convert_to_md()
-        # os.remove(docx_path)
-        f = open(md_path, 'r', encoding='utf-8')
-        list_ = f.readlines()
-        f.close()
-        new_list = []
-        for item in list_:
-            if item != '\n':
-                if '.png' in item or 'height' in item:
-                    continue
-                new_list.append(item)
-        path, name = split(rep.target_img)
-        new_list.append('\n')
-        new_list.append('    ![]({})\n'.format(name))
-        f = open(md_path, 'w', encoding='utf-8')
-        f.writelines(new_list)
-        f.close()
+        self.md_path = rep.convert_to_md()
+        aes, encryptor, decryptor = self.initial()
+        if self.md_path:
+            if self.checked:
+                md_path1 = aes.AES_encry_md(encryptor)
+                path, name = split(self.md_path)
+                message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
+                message.exec_()
+                mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
+                mess.openn.connect(lambda: self.open_now(md_path1, decryptor, aes))
+                mess.later.connect(lambda: self.laterview(self.md_path))
+                mess.exec_()
+            else:
+                path, name = split(self.md_path)
+                message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
+                message.exec_()
+                mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
+                mess.openn.connect(lambda: self.open_now(self.md_path, None, None))
+                mess.later.connect(lambda: self.laterview(None))
+                mess.exec_()
 
-        def open_now():
-            cmd = "start " + md_path
-            os.system(cmd)
 
-        def laterview():
+    def open_now(self, file_path, decryptor, aes):
+        if decryptor == None :
+            url = QUrl.fromLocalFile(file_path)
+            QDesktopServices.openUrl(url)
+        else:
+            path, name = split(file_path)
+            if name.endswith('docx'):
+                file = aes.AES_decry_docx(decryptor, file_path)
+            if name.endswith('pdf'):
+                file = aes.AES_decry_pdf(decryptor, file_path)
+            if name.endswith('md'):
+                file = aes.AES_decry_md(decryptor, file_path)
+            url = QUrl.fromLocalFile(file)
+            QDesktopServices.openUrl(url)
+
+
+    def laterview(self, file_path):
+        if file_path == None:
             pass
-        if md_path:
-            path, name = split(md_path)
-            message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
-            message.exec_()
-
-            mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
-            mess.openn.connect(open_now)
-            mess.later.connect(laterview)
-            mess.exec_()
+        else:
+            os.remove(file_path)
 
 
-
+    def check_report(self):
+        report_path = self.config_ini["main_project"]["project_name"] + 'data/reports/'
+        for root, dirs, files in os.walk(report_path):
+            for file in files:
+                if file.startswith('report') or file.startswith('dereport'):
+                    file_path = os.path.normpath(os.path.join(root, file))
+                    os.remove(file_path)
+        fileName, isOk = QFileDialog.getOpenFileName(self, "选取文件", report_path, "文档文件 (*.docx *.pdf *.md)")
+        if isOk:
+            aes, _, decryptor = self.initial()
+            self.open_now(fileName, decryptor, aes)
 
 
     def terminal_run(self):
@@ -559,7 +632,6 @@ class IndexWindow(QMainWindow):
     def jump_terminal(self):
         target_index = 1
         self.ui.show_tab_widget.setCurrentIndex(target_index)
-
 
     # 右侧树
     def tree_display(self, funlist, vallist):
@@ -659,10 +731,9 @@ class IndexWindow(QMainWindow):
             self.c_out_filename = self.c_sour_filename.replace(".cpp", ".exe")
         self.c_out_file = self.config_ini["main_project"]["project_name"] + self.config_ini["compile"][
             "exe"] + self.c_out_filename
-        arg, ok = QInputDialog.getText(self, "提示", "如果含参数，请输入参数(空格分隔)，否则请关闭本窗口:")
+        arg, ok = QInputDialog.getText(self, "提示", "如果含参数，请输入参数(空格分隔)，否则请点击ok:")
         if arg and ok:
             # 这里终端命令输入要新写逻辑，不能直接操控 然后要控制终端所在的目录
-
             runn = run(self.c_out_file, arg=arg)
             exe_result = runn.run_run()
             if exe_result == False:
@@ -730,7 +801,6 @@ class IndexWindow(QMainWindow):
             else:
                 self.ui.terminal_c.append('[out]: \n' + result)
 
-
     def enable_operate(self):
         for i in self.ui.file_manager.actions():
             i.setEnabled(True)
@@ -796,6 +866,7 @@ class IndexWindow(QMainWindow):
         self.unit_Icon_Shortcut(self.ui.search_replace, 'ui_search', 'Ctrl+F')
         self.unit_Icon_Shortcut(self.ui.generate_img, 'ui_generate_img', 'Ctrl+I')
         self.unit_Icon_Shortcut(self.ui.generate_report, 'ui_report', 'Ctrl+R')
+        self.unit_Icon_Shortcut(self.ui.check_report, 'ui_check_report', 'Ctrl+L')
         self.unit_Icon_Shortcut(self.ui.terminal, 'ui_terminal', 'Ctrl+T')
         self.unit_Icon_Shortcut(self.ui.compiler_c, 'ui_compile', 'Alt+F9')
         self.unit_Icon_Shortcut(self.ui.run_c, 'ui_run', 'Alt+F10')
@@ -840,6 +911,24 @@ class IndexWindow(QMainWindow):
         self.ui.backto.setStyleSheet(
             f"QPushButton {{ border-image: url({self.ui_back_to});background-color: transparent; }}")
 
+    def create_nested_folders(self):
+        import os
+        # 绝对路径
+        base_folder = self.config_ini['main_project']['project_name']
+        # 嵌套文件夹列表
+        nested_folders = [
+            'data/exe',
+            'data/reports/pdf',
+            'data/reports/md',
+            'data/reports/img',
+            'data/reports/docx',
+            'data/rules',
+            'data/tags'
+        ]
+        for folder in nested_folders:
+            folder_path = os.path.join(base_folder, folder)
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
 
 if __name__ == '__main__':
     app = QApplication([])
@@ -863,3 +952,4 @@ if __name__ == '__main__':
 
     index_window.show()
     app.exec_()
+

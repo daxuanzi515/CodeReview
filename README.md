@@ -236,7 +236,7 @@ def iterAST(cursor):
 # 入口
 iterAST(AST_Root)
 ```
-### 跳转
+### 初级跳转
 
 对，没错，依旧是通过绝对位置硬算坐标TVT~~~
 
@@ -248,6 +248,96 @@ iterAST(AST_Root)
 `positions_func = [position_0,position_1,position_2, ...,position_n]`
 
 传入高亮函数`highlight_all_text(positions)`里进行高亮
+
+
+### 中级跳转
+为什么要分初级还是中级?
+
+初级就是只能在同一个文件里跳转声明\定义\调用
+
+中级就是在不同文件里跳转声明\定义\调用,这里只限制头文件\源文件
+
+高级就是在所有项目文件里面跳转,我暂时还不会...
+#### 问题根源
+因为如果你把函数的声明写到头文件里，再引用头文件，那么你需要跳转这个函数的时候就会在原来的位置找不到声明...
+
+如果在文件里存在标准头文件，就会把里面的函数一起分析了，这就会分析上千行......
+
+#### 解决方案
+
+在文本编辑器里面显示源文件带头文件的内容，但是我实际上分析的时候，传入的内容是含注释掉头文件的源文件内容.
+
+这样之后文本编辑器上的文本位置不会乱，而分析器也不会分析头文件，但是这样会生成临时文件，所以在分析结束之后把它删掉，看起来就是分析了源文件的内容.(๑•̀ㅂ•́)و✧)
+
+对于分析的时候先查一轮源文件里自定义的头文件集合，再对头文件筛选一遍函数声明\定义.
+
+接着对临时文件内容筛选一遍函数声明\定义\调用,在函数声明里查没有在源文件列表里出现的目标
+
+再到头文件函数声明列表里查一遍，查到就输出其信息.
+
+```python
+filename = r'???/????/???/test.cpp'
+
+def get_headers(filename):
+    import re
+    with open(filename, 'r', encoding='utf-8') as file:
+        contents = file.readlines()
+    headers = []
+    # 正则表达式筛选所有 #include"???.h" / #include "???.h" 自定义头文件
+    pattern = r'#include\s*["]\s*(\w+\.h)\s*["]'
+    for item in contents:
+        match = re.search(pattern, item)
+        if match:
+            dependency = match.group(1)
+            headers.append(dependency)
+    return headers
+
+# 对所有自定义引用的头文件分析
+def headerAnalyzer(filename):
+    # 伪代码 FunctionDump是存储过滤结果的类
+    headers_path = get_headers(filename)
+    headers_analyzers_list = []
+    for item in headers_path:
+        analyzer_obj = FunctionDump(filename)
+        analyzer_obj.Launcher()
+        analyzer_obj.show_details()
+        headers_analyzers_list.append((item, analyzer_obj))
+    return headers_analyzers_list
+
+# 除去头文件的源代码分析
+def excludeHeaderAnalyzer(filename):
+    # 伪代码 FunctionDump是存储过滤结果的类
+    analyzer_obj = FunctionDump(filename)
+    analyzer_obj.Launcher()
+    analyzer_obj.show_details()
+    return analyzer_obj
+
+def preProcessTools(filename, keyword):
+    # 伪代码 举声明函数查找例子
+    header_objs = headerAnalyzer(filename)
+    exclude_header_objs = excludeHeaderAnalyzer(filename)
+    # 先把所有名字存起来 之后筛选
+    exclude_declaration_name_list = [item.function_name for item in exclude_header_objs.function_declaration_list]
+    # 设置声明标志位
+    declared_flag = True
+    target_function_name = keyword
+    if target_function_name not in exclude_declaration_name_list:
+        declared_flag = False
+    # 根据标志位开始判断是哪个集合里的函数声明 是头文件里的就查头文件 否则查源文件
+    if not declared_flag:
+        for item in header_objs:
+            path, header_obj = item
+            for function_obj in header_obj.function_declaration_list:
+                if target_function_name == function_obj.function_name and function_obj.declared_contents is not None:
+                    print(function_obj.declared_contents)
+                    print(function_obj.declared_location)
+    elif declared_flag:
+        for item in exclude_header_objs.function_declaration_list:
+            if target_function_name == item.function_name and item.declared_contents is not None:
+                print(item.declared_contents)
+                print(item.declared_location)
+    # ... 基本照猫画虎 大致思路如上 看具体代码的时候能更清楚地明白我在说什么??0-<我自己写的时候都蒙圈好几次
+```
 
 ## 下载文件
 

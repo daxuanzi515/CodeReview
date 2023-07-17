@@ -11,5 +11,6 @@
 /data/exe/
 /data/tags/
 /data/reports/
+/data/rules/
 src/utils/compile/clang.exe
-src/utils/report/pandoc.exe
+

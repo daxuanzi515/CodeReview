@@ -1,7 +1,14 @@
+clang==16.0.1.1
 cryptography==39.0.1
+docx2pdf==0.1.8
+docxtpl==0.16.7
+gvcode==1.0.3
+matplotlib==3.7.1
 PyMySQL==1.1.0
 PyQt5==5.15.9
 pyqt5_plugins==5.15.9.2.3
 PyQt5_sip==12.12.1
+python_docx==0.8.11
 qt_material==2.14
+QtAwesome==1.2.2
 Send2Trash==1.8.2

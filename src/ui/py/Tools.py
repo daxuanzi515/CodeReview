@@ -3,7 +3,7 @@ import os
 from PyQt5 import QtCore
 from PyQt5.QtCore import QTimer, QRectF, Qt, QFile
 from PyQt5.QtGui import QPainter, QPaintEvent, QPixmap
-from PyQt5.QtWidgets import QFrame, QDialog, QVBoxLayout, QPushButton, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QFrame, QDialog, QVBoxLayout, QPushButton, QLabel, QHBoxLayout, QCheckBox
 
 
 class WelcomePage(QFrame):
@@ -186,63 +186,75 @@ class RemoveMessage(QDialog):
         file_path = os.path.normpath(self.complete_path)
         try:
             send2trash(file_path)
-            print('删除成功！')
+            # print('删除成功！')
             self.accept()
         except:
-            print('删除失败！')
+            # print('删除失败！')
             self.accept()
-
 
 class GenerateFileMessage(QDialog):
     # reports pdf md 信号
     docx = QtCore.pyqtSignal()
     pdf = QtCore.pyqtSignal()
     md = QtCore.pyqtSignal()
+    encrypt = QtCore.pyqtSignal(bool)
     def __init__(self, icon, text, parent=None):
         super().__init__(parent)
         self.icon = icon
         self.setWindowTitle("提示")
         self.setWindowIcon(icon)
-        self.setFixedSize(280, 100)  # 设置对话框的固定大小
+        self.setFixedSize(450, 200)  # 设置对话框的固定大小
         v_layout = QVBoxLayout(self)
         h_layout = QHBoxLayout()
         label = QLabel(text)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         label.setAlignment(Qt.AlignCenter)  # 将文本水平和垂直居中显示
         v_layout.addWidget(label)
+
+        h_layout.addStretch(1)
+        self.checkbox = QCheckBox('加密文件')
+        h_layout.addWidget(self.checkbox)
+        h_layout.addStretch(1)
+        v_layout.addLayout(h_layout)
 
         # Add buttons
         docx_button = QPushButton('Docx')
         pdf_button = QPushButton('PDF')
         markdown_button = QPushButton('Markdown')
 
-
         docx_button.clicked.connect(self.docx_)
         markdown_button.clicked.connect(self.md_)
         pdf_button.clicked.connect(self.pdf_)
+
 
         h_layout.addWidget(docx_button)
         h_layout.addWidget(pdf_button)
         h_layout.addWidget(markdown_button)
         v_layout.addLayout(h_layout)
+        self.checked = False
+
 
     def docx_(self):
+        self.checked = self.checkbox.isChecked()
         self.docx.emit()
         self.accept()
+
+
     def pdf_(self):
+        self.checked = self.checkbox.isChecked()
         self.pdf.emit()
         self.accept()
 
-
     def md_(self):
+        self.checked = self.checkbox.isChecked()
         self.md.emit()
         self.accept()
 
+
+
 class OpenFileMessage(QDialog):
-    # reports pdf md 信号
     openn = QtCore.pyqtSignal()
     later = QtCore.pyqtSignal()
-    # md = QtCore.pyqtSignal()
     def __init__(self, icon, text, parent=None):
         super().__init__(parent)
         self.icon = icon
@@ -256,11 +268,8 @@ class OpenFileMessage(QDialog):
         label.setAlignment(Qt.AlignCenter)  # 将文本水平和垂直居中显示
         v_layout.addWidget(label)
 
-        # Add buttons
         open_button = QPushButton('立即打开')
         later_button = QPushButton('稍后查看')
-
-
         open_button.clicked.connect(self.open_)
         later_button.clicked.connect(self.later_)
 
@@ -274,3 +283,31 @@ class OpenFileMessage(QDialog):
     def later_(self):
         self.later.emit()
         self.accept()
+
+class DeleteDataMessage(QDialog):
+    OK = QtCore.pyqtSignal()
+    def __init__(self, icon, parent=None):
+        super().__init__(parent)
+        self.icon = icon
+        self.setWindowTitle("提示")
+        self.setWindowIcon(icon)
+        self.setFixedSize(280, 100)  # 设置对话框的固定大小
+        v_layout = QVBoxLayout(self)
+        h_layout = QHBoxLayout()
+        label = QLabel("是否从数据库删除当前数据？")
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        label.setAlignment(Qt.AlignCenter)  # 将文本水平和垂直居中显示
+        v_layout.addWidget(label)
+        label.setWordWrap(True)  # 设置标签的文本可换行
+        button1 = QPushButton('删除')
+        button2 = QPushButton('取消')
+        button1.clicked.connect(self.run)
+        button2.clicked.connect(self.reject)
+        h_layout.addWidget(button1)
+        h_layout.addWidget(button2)
+        v_layout.addLayout(h_layout)
+
+    def run(self):
+        self.OK.emit()
+        self.accept()
+

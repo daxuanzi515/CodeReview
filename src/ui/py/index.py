@@ -12,7 +12,7 @@ from src.utils.ctags.fun_value_find import funvaluefind
 from src.utils.compile.compile import compile, comrun, run
 from src.utils.report.generate_img import PieChartGenerator
 from src.utils.report.convert import Convert
-from src.utils.report.AES_report import AES_report
+from src.utils.report.AES_report import AES_report, IntoFiles
 from src.utils.riskcheck.risk import RiskFind
 from src.utils.texteditor.text_editor import TextEditorWidget
 from src.utils.bash.terminal import Terminal
@@ -69,7 +69,7 @@ class IndexWindow(QMainWindow):
         # 编译/运行/编译运行所使用的成员
         # 后缀...
         # 日志对象
-        self.log_obj = None
+        self.log_obj = Log()
         self.c_sour_filename = None
         self.c_out_filename = None
         # 完整路路径
@@ -90,10 +90,10 @@ class IndexWindow(QMainWindow):
         self.user_id = None
         self.scanner_rule = None
         # 函数属性存储列表
-        self.header_objs = None
-        self.exclude_header_objs = None
         self.source_data = None
         self.current_source_path = None
+        # 报告对象
+        self.files_list = []
         # 文件夹设置建立
         self.create_nested_folders()
         # 对象创建
@@ -314,8 +314,8 @@ class IndexWindow(QMainWindow):
 
     def create_new_open_tab(self, absolute_path):
         # 照样分割路径
+        absolute_path = os.path.normpath(absolute_path)
         path, name = split(absolute_path)
-
         if name.endswith(".c") or name.endswith(".cpp") or name.endswith(".h"):
             self.fun_val_tree(path, name)
         else:
@@ -325,7 +325,11 @@ class IndexWindow(QMainWindow):
         # 不能根据内容是否一致判断
         for number in range(self.ui.text_editor.count()):
             tab_item = self.ui.text_editor.widget(number)
-            if tab_item.filepath == absolute_path:
+            print(tab_item.filepath)
+            print(absolute_path)
+            tab_item_path = os.path.normpath(tab_item.filepath + '/' + tab_item.filename)
+
+            if tab_item_path == absolute_path:
                 # 就是当前被打开的 什么也不做
                 self.ui.text_editor.setCurrentWidget(tab_item)
                 return
@@ -450,116 +454,22 @@ class IndexWindow(QMainWindow):
             invaliddatas.append(data_dict)
         demo = PieChartGenerator(riskdatas=riskdatas, invaliddatas=invaliddatas, config_ini=self.config_ini)
         img_path = demo.generate_image()
+
+        self.log_obj.inputValue(self.user_id, f"使用生成图片功能，生成图片{img_path}", '操作安全')
+        logging = self.log_obj.returnString()
+        self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                            + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
         url = QUrl.fromLocalFile(img_path)
         QDesktopServices.openUrl(url)
-
+    # TODO
     def generate_report(self):
         self.message = GenerateFileMessage(icon=QIcon(self.ui_icon), text='选择导出文件类型以及是否加密')
         self.message.docx.connect(self.docx_file)
         self.message.md.connect(self.md_file)
         self.message.pdf.connect(self.pdf_file)
         self.message.exec_()
-
-    # def docx_file(self):
-    #     riskdatas = []
-    #     for i in self.riskfunlist:
-    #         data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
-    #         riskdatas.append(data_dict)
-    #     invaliddatas = []
-    #     for i in self.invalidfun:
-    #         data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
-    #         invaliddatas.append(data_dict)
-    #     for i in self.invalidval:
-    #         data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
-    #         invaliddatas.append(data_dict)
-    #     if riskdatas is not None:
-    #         file_path = invaliddatas[0]['path']
-    #     elif invaliddatas is not None:
-    #         file_path = invaliddatas[0]['path']
-    #     else:
-    #         file_path = None
-    #     rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
-    #     docx_path = rep.generate_report()
-    #
-    #     if docx_path:
-    #         path, name = split(docx_path)
-    #         message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
-    #         message.exec_()
-    #         mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
-    #         mess.openn.connect(lambda : self.open_now(docx_path))
-    #         mess.later.connect(self.laterview)
-    #         mess.exec_()
-    #
-
-    # def pdf_file(self):
-    #     riskdatas = []
-    #     for i in self.riskfunlist:
-    #         data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
-    #         riskdatas.append(data_dict)
-    #     invaliddatas = []
-    #     for i in self.invalidfun:
-    #         data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
-    #         invaliddatas.append(data_dict)
-    #     for i in self.invalidval:
-    #         data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
-    #         invaliddatas.append(data_dict)
-    #     if riskdatas is not None:
-    #         file_path = invaliddatas[0]['path']
-    #     elif invaliddatas is not None:
-    #         file_path = invaliddatas[0]['path']
-    #     else:
-    #         file_path = None
-    #     rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
-    #     docx_path = rep.generate_report()
-    #     pdf_path = rep.convert_to_pdf(docx_path)
-    #     os.remove(docx_path)
-    #     if pdf_path:
-    #         path, name = split(pdf_path)
-    #         message = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text=f'{name},文件导出成功!')
-    #         message.exec_()
-    #
-    #         mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
-    #         mess.openn.connect(lambda : self.open_now(pdf_path))
-    #         mess.later.connect(self.laterview)
-    #         mess.exec_()
-    #
-    # def md_file(self):
-    #     riskdatas = []
-    #     for i in self.riskfunlist:
-    #         data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
-    #         riskdatas.append(data_dict)
-    #     invaliddatas = []
-    #     for i in self.invalidfun:
-    #         data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
-    #         invaliddatas.append(data_dict)
-    #     for i in self.invalidval:
-    #         data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
-    #         invaliddatas.append(data_dict)
-    #     if riskdatas is not None:
-    #         file_path = invaliddatas[0]['path']
-    #     elif invaliddatas is not None:
-    #         file_path = invaliddatas[0]['path']
-    #     else:
-    #         file_path = None
-    #     rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
-    #     md_path = rep.convert_to_md()
-    #     if md_path:
-    #         path, name = split(md_path)
-    #         message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
-    #         message.exec_()
-    #
-    #         mess = OpenFileMessage(icon=QIcon(self.ui_icon), text="选择是否打开：")
-    #         mess.openn.connect(lambda:self.open_now(md_path))
-    #         mess.later.connect(self.laterview)
-    #         mess.exec_()
-    #
-    # def open_now(self, file_path):
-    #     url = QUrl.fromLocalFile(file_path)
-    #     QDesktopServices.openUrl(url)
-    #
-    # def laterview(self):
-    #     pass
-
+        intodata = IntoFiles(info=self.files_list, config_ini=self.config_ini)
+        intodata.insert()
     def docx_file(self):
         self.checked = self.message.checked
         riskdatas = []
@@ -585,6 +495,14 @@ class IndexWindow(QMainWindow):
         if self.docx_path:
             if self.checked:
                 docx_path1 = aes.AES_encry_docx(encryptor)
+                self.files_list.append({'user_id':self.user_id, 'report_type': 'word', 'report_path': f'{docx_path1}',
+                                        'log_path': (self.config_ini['main_project']['project_name']
+                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log')})
+
+                self.log_obj.inputValue(self.user_id, f"使用导出报告功能，导出 [word] 报告 {docx_path1}", '操作安全')
+                logging = self.log_obj.returnString()
+                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
                 path, name = split(self.docx_path)
                 message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
                 message.exec_()
@@ -608,7 +526,7 @@ class IndexWindow(QMainWindow):
             self.pdf_path = None
         if not hasattr(self, 'md_path'):
             self.md_path = None
-        demo = AES_report(self.config_ini, self.docx_path, self.pdf_path, self.md_path)
+        demo = AES_report(self.config_ini, self.docx_path, self.pdf_path, self.md_path, self.user_id)
         a, b = demo.initialize()
         return demo, a, b
 
@@ -639,6 +557,16 @@ class IndexWindow(QMainWindow):
         if self.pdf_path:
             if self.checked:
                 pdf_path1 = aes.AES_encry_pdf(encryptor)
+
+                self.files_list.append({'user_id':self.user_id, 'report_type': 'pdf', 'report_path': f'{pdf_path1}',
+                                        'log_path': (self.config_ini['main_project']['project_name']
+                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log')})
+
+                self.log_obj.inputValue(self.user_id, f"使用导出报告功能，导出 [pdf] 报告 {pdf_path1}", '操作安全')
+                logging = self.log_obj.returnString()
+                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+
                 path, name = split(self.pdf_path)
                 message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
                 message.exec_()
@@ -680,6 +608,16 @@ class IndexWindow(QMainWindow):
         if self.md_path:
             if self.checked:
                 md_path1 = aes.AES_encry_md(encryptor)
+
+                self.files_list.append({'user_id':self.user_id, 'report_type': 'markdown', 'report_path': f'{md_path1}',
+                                        'log_path': (self.config_ini['main_project']['project_name']
+                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log')})
+
+                self.log_obj.inputValue(self.user_id, f"使用导出报告功能，导出 [markdown] 报告 {md_path1}", '操作安全')
+                logging = self.log_obj.returnString()
+                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+
                 path, name = split(self.md_path)
                 message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
                 message.exec_()
@@ -728,18 +666,17 @@ class IndexWindow(QMainWindow):
         return source_data
 
     # 声明跳转
-    # TODO
     def gotoDeclaration(self, editor):
         position, selected_text = editor.getSelected_Position_Content()
         locations = []
-        absolute_path = editor.filepath + '/' + editor.filename
+        absolute_path = editor.filepath
         # 过滤选中的字符
         selected_text = editor.getSelectdFunctionName(selected_text)
         if self.source_data == None or self.current_source_path == None:
             self.source_data = self.getFuncAnalyzer(editor=editor)
-            self.current_source_path = absolute_path
-        elif self.current_source_path and self.current_source_path != absolute_path:
-            self.current_source_path = absolute_path
+            self.current_source_path = os.path.normpath(absolute_path)
+        elif self.current_source_path and self.current_source_path != os.path.normpath(absolute_path):
+            self.current_source_path = os.path.normpath(absolute_path)
         else:
             pass
         location = None
@@ -800,18 +737,17 @@ class IndexWindow(QMainWindow):
                         editor.highlight_function_declaration(text_location)
 
     # 定义跳转
-    # TODO
     def gotoDefinition(self, editor):
         position, selected_text = editor.getSelected_Position_Content()
         locations = []
-        absolute_path = editor.filepath + '/' + editor.filename
+        absolute_path = editor.filepath
         selected_text = editor.getSelectdFunctionName(selected_text)
 
         if self.source_data == None or self.current_source_path == None:
             self.source_data = self.getFuncAnalyzer(editor=editor)
-            self.current_source_path = absolute_path
-        elif self.current_source_path and self.current_source_path != absolute_path:
-            self.current_source_path = absolute_path
+            self.current_source_path = os.path.normpath(absolute_path)
+        elif self.current_source_path and self.current_source_path != os.path.normpath(absolute_path):
+            self.current_source_path = os.path.normpath(absolute_path)
         else:
             pass
         location = None
@@ -843,8 +779,6 @@ class IndexWindow(QMainWindow):
                         # 定义
                         for i in item.function_definition_list:
                             if selected_text == i.function_name  and i.definition_contents:
-                                print(i.definition_contents)
-                                print(i.definition_location)
                                 location = i.definition_location
                                 if isSource:
                                     self.create_new_open_tab(header_path)
@@ -863,8 +797,8 @@ class IndexWindow(QMainWindow):
 
                 elif isFind and location is not None:
                     another_editor = editor
-                    if filename != absolute_path:
-                        self.create_new_open_tab(filename)
+                    if os.path.normpath(absolute_path) != os.path.normpath(filename):
+                        self.create_new_open_tab(os.path.normpath(filename))
                         another_editor = self.ui.text_editor.currentWidget()
                     if location is not None:
                         start_line = location[0] - 1
@@ -873,18 +807,18 @@ class IndexWindow(QMainWindow):
                         end_index = location[3] - 1
                         text_location = [(start_line, start_index, end_line, end_index)]
                         another_editor.highlight_function_definition(text_location)
-
+    # TODO
     # 调用跳转
     def gotoCallExpress(self, editor):
         position, selected_text = editor.getSelected_Position_Content()
         locations = []
-        absolute_path = editor.filepath + '/' + editor.filename
+        absolute_path = editor.filepath
         selected_text = editor.getSelectdFunctionName(selected_text)
         if self.source_data == None or self.current_source_path == None:
             self.source_data = self.getFuncAnalyzer(editor=editor)
-            self.current_source_path = absolute_path
-        elif self.current_source_path and self.current_source_path != absolute_path:
-            self.current_source_path = absolute_path
+            self.current_source_path = os.path.normpath(absolute_path)
+        elif self.current_source_path and self.current_source_path != os.path.normpath(absolute_path):
+            self.current_source_path = os.path.normpath(absolute_path)
         else:
             pass
         isSource = True
@@ -914,60 +848,13 @@ class IndexWindow(QMainWindow):
                     another_editor = self.ui.text_editor.currentWidget()
                     another_editor.highlight_function_call_express(locations)
                 elif isSource and locations != []:
-                    if filename != absolute_path:
-                        self.create_new_open_tab(filename)
+                    if os.path.normpath(absolute_path) != os.path.normpath(filename):
+                        self.create_new_open_tab(os.path.normpath(filename))
                         another_editor = self.ui.text_editor.currentWidget()
                         another_editor.highlight_function_call_express(locations)
                     else:
                         editor.highlight_function_call_express(locations)
 
-
-
-    # def gotoCallExpress(self, editor):
-    #     position, selected_text = editor.getSelected_Position_Content()
-    #     locations = []
-    #     absolute_path = editor.filepath + '/' + editor.filename
-    #     # 过滤选中的字符
-    #     selected_text = editor.getSelectdFunctionName(selected_text)
-    #     isSource = True
-    #     # 头文件跳源文件
-    #     if '.h' in editor.filename or '.hh' in editor.filename:
-    #         isSource = False
-    #     # 避免重复读
-    #     if self.header_objs == None or self.exclude_headers_objs == None or self.current_source_path == None:  # 初始化
-    #         self.header_objs, self.exclude_headers_objs = self.getFuncAnalyzer(editor=editor)
-    #         self.current_source_path = absolute_path
-    #     elif self.current_source_path and self.current_source_path != absolute_path:  # 换文件了
-    #         self.current_source_path = absolute_path
-    #     else:  # 还在同一个文件里...不做任何事
-    #         pass
-    #     # 核心代码段
-    #     location = []
-    #     if self.exclude_headers_objs:
-    #         for item in self.exclude_headers_objs.function_callexpress_list:
-    #             if selected_text == item.function_name and item.call_express_location is not None:
-    #                 location = item.call_express_location
-    #                 start_line = location[0] - 1
-    #                 start_index = location[1] - 1
-    #                 end_line = location[2] - 1
-    #                 end_index = location[3] - 1
-    #                 text_location = (start_line, start_index, end_line, end_index)
-    #                 locations.append(text_location)
-    #
-    #         if isSource:
-    #             if locations != []:
-    #                 editor.highlight_function_call_express(locations)
-    #         else:
-    #             if locations != []:
-    #                 for obj in self.header_objs:
-    #                     source, path, item = obj
-    #                     self.create_new_open_tab(source)
-    #                     current_editor = self.ui.text_editor.currentWidget()
-    #                     current_editor.highlight_function_call_express(locations)
-    #     else:
-    #         pass
-
-    # TODO
     def check_report(self):
         report_path = self.config_ini["main_project"]["project_name"] + 'data/reports/'
         for root, dirs, files in os.walk(report_path):
@@ -979,7 +866,6 @@ class IndexWindow(QMainWindow):
         if isOk:
             aes, _, decryptor = self.initial()
             self.open_now(fileName, decryptor, aes)
-    # add sth
 
     def terminal_run(self):
         self.terminal.Run()

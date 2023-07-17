@@ -1,12 +1,13 @@
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding
-from cryptography.hazmat.backends import default_backend
-import os
 import datetime
 from os.path import split
 
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from src.utils.mysql.mysql import SQL
+
 class AES_report:
-    def __init__(self, config_ini, docx_path, pdf_path, md_path):
+    def __init__(self, config_ini, docx_path, pdf_path, md_path, user_id):
         self.config_ini = config_ini
         self.docx_path = docx_path
         self.pdf_path = pdf_path
@@ -19,10 +20,18 @@ class AES_report:
         self.de_pdf_path = config_ini['main_project']['project_name'] + config_ini['report']['de_pdf_path']
         self.de_md_path = config_ini['main_project']['project_name'] + config_ini['report']['de_markdown_path']
         self.flag = b'ENCRYPTED-FLAG\n'
-        # 生成随机的 256 位密钥
-        self.key = b'5\xb1/U\xceG\xd8?\x03e\x0e\xa5E\xedG2)\xf3\xc5_g$\\\xd0\xcf\xf5\xac"\x996\xee\x1e'
+        self.sql = SQL(config_ini=config_ini)
+        self.user_id = user_id
+        self.key = None
+
+    def getKey(self):
+        self.sql.connect_db()
+        res = self.sql.select('user', 'aes_key', f"id = '{self.user_id}'")
+        self.sql.close_db()
+        self.key = res[0][0]
 
     def initialize(self):
+        self.getKey()
         # 初始化 AES 密码器和加密模式（ECB）
         cipher = Cipher(algorithms.AES(self.key), modes.ECB(), backend=default_backend())
         # 创建加密器
@@ -135,3 +144,14 @@ class AES_report:
             file.write(md_unpadded_data)
             file.close()
         return self.de_md_path
+
+class IntoFiles:
+    def __init__(self, info, config_ini):
+        self.sql = SQL(config_ini=config_ini)
+        self.info = info
+    def insert(self):
+        if self.info != []:
+            self.sql.connect_db()
+            for item in self.info:
+                self.sql.insert(table_name='files', data=item)
+            self.sql.close_db()

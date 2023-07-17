@@ -121,7 +121,6 @@ class Terminal(QMainWindow):
         header1 = "[in]: "
         header2 = "\n[out]:\n"
 
-        print(self.user_id)
         self.log_obj.inputValue(self.user_id, f'使用终端输入命令行内容: {msg1}', '操作安全')
         logging1 = self.log_obj.returnString()
         self.log_obj.inputValue(self.user_id, f'使用终端获取回显内容: {output}', '操作安全')

@@ -32,6 +32,7 @@ class SearchReplaceWindow(QDialog):
         self.smaller_pixmap = self.pixmap.scaled(24, 24)  # 将图像调整为24*24的尺寸
         self.setWindowIcon(QIcon(self.ui_icon))
         # 日志
+        self.user_id = parent.user_id
         self.log_obj = Log()
         # 设置消息对象
         self.current_index = 0  # 查找的位置第一位
@@ -99,10 +100,10 @@ class SearchReplaceWindow(QDialog):
                     pos = (start_line, start_index, end_line, end_index)
                     self.replace_pos = [pos]
 
-                    # self.log_obj.inputValue(self.user_id, f'使用单个替换功能', '操作安全')
-                    # logging = self.log_obj.returnString()
-                    # self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                    #                                     + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+                    self.log_obj.inputValue(self.user_id, f'使用单个替换功能，替换{init_word}为{replace_word}', '操作安全')
+                    logging = self.log_obj.returnString()
+                    self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                        + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
 
     def replace_all_string(self):
         self.replace_pos.clear()
@@ -141,6 +142,11 @@ class SearchReplaceWindow(QDialog):
                 self.select_replace_pos = list(pos)
                 current_tab.multi_highlight_text(self.select_replace_pos)
                 self.ui.msg2.setText(f'{count}处被替换成功！')
+
+                self.log_obj.inputValue(self.user_id, f'使用全部替换功能替换{init_word}为{replace_word}', '操作安全')
+                logging = self.log_obj.returnString()
+                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
 
     def choice_bridge_s(self):
         if self.ui.All_s.isChecked():
@@ -202,6 +208,10 @@ class SearchReplaceWindow(QDialog):
             current_tab.multi_highlight_text(self.keywords_pos)
             # self.ui.msg1 && self.ui.msg2
             self.ui.msg1.setText(f"共搜索到关键词: '{input_string}'  {count}次！")
+            self.log_obj.inputValue(self.user_id, f"使用全部查找功能，查找关键词 '{input_string}' {count}次", '操作安全')
+            logging = self.log_obj.returnString()
+            self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
 
     def search_select_string(self):
         # 点击之前先清空一切阻碍
@@ -272,6 +282,10 @@ class SearchReplaceWindow(QDialog):
             self.select_keywords_pos = list(positions)
             current_tab.multi_highlight_text(self.select_keywords_pos)
             self.ui.msg1.setText(f"共搜索到关键词: '{input_string}'  {count}次！")
+            self.log_obj.inputValue(self.user_id, f"使用选中功能，查找关键词 '{input_string}' {count}次", '操作安全')
+            logging = self.log_obj.returnString()
+            self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
+                                                + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
 
     # 查找的追溯
     # 向下追溯

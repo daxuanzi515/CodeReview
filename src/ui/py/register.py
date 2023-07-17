@@ -195,9 +195,9 @@ class RegisterWindow(QWidget):
 
     # 密钥生成
     def generate_key(self):
-        key = Fernet.generate_key()
-        key_str = key.decode('utf-8')  # 将字节串转换为 UTF-8 编码的字符串
-        return key_str
+        import secrets
+        key = secrets.token_bytes(32)
+        return key
 
     # 加盐密码
     def hash_password(self, password, salt=None):
@@ -215,13 +215,13 @@ class RegisterWindow(QWidget):
         # salt是二进制数
         salt_password, salt = self.hash_password(password)
         # 生成密钥
-        private_key = self.generate_key()
+        aes_key = self.generate_key()
         user_data = {
             'id': user_id,
             'username': username,
             'password': salt_password,
             'salt': salt,
-            'private_key': private_key
+            'aes_key': aes_key
         }
         # 连接数据库
         self.sql_obj.connect_db()

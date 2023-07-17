@@ -87,7 +87,7 @@ user{
     username: VARCHAR(100),
     password: VARCHAR(200),
     salt: BINARY(64),
-    private_key: VARCHAR(200)
+    aes_key: BINARY(32),
 }
 ```
 #### 数据库表 `danger_func`
@@ -113,9 +113,7 @@ files{
     user_id: VARCHAR(50),
     report_type: VARCHAR(10),
     report_path: VARCHAR(200),
-    img_path: VARCHAR(200),
     log_path: VARCHAR(200),
-    public_key: VARCHAR(200),
     id: auto_increment
 }
 ```

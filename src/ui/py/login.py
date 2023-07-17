@@ -1,12 +1,15 @@
 import hashlib
+
+from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRegularExpression
 from PyQt5.QtGui import QIcon, QPixmap, QCursor, QRegularExpressionValidator, QValidator
-from PyQt5.QtWidgets import QWidget, QSizePolicy, QInputDialog, QMessageBox
+from PyQt5.QtWidgets import QWidget, QSizePolicy, QInputDialog
 from pyqt5_plugins.examplebutton import QtWidgets
-from PyQt5 import QtCore
-from .Tools import WelcomePage, CustomMessageBox
-from src.utils.mysql.mysql import SQL
+
 from src.utils.log.log import Log
+from src.utils.mysql.mysql import SQL
+from .Tools import WelcomePage, CustomMessageBox
+
 
 class LoginWindow(QWidget):
     # 定义登录成功的信号
@@ -32,12 +35,12 @@ class LoginWindow(QWidget):
         # 创建并添加自定义组件
         self.welcomepage = WelcomePage(self.ui.welcomepage, target_img=ui_welcome_page)
         self.ui.password.setEchoMode(QtWidgets.QLineEdit.Password)
+        # 文件夹设置建立
+        self.create_nested_folders()
         # 创建对象
         self.sql_obj = SQL(config_ini=config_ini)
         self.user_id = None
         self.log_obj = Log()
-        # 文件夹设置建立
-        self.create_nested_folders()
         # 槽函数
         self.ui.login.clicked.connect(self.login_check)
         self.ui.change.clicked.connect(self.change_password)

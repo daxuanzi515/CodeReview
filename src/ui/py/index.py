@@ -313,7 +313,7 @@ class IndexWindow(QMainWindow):
                 file.close()
                 if current_tab.getStatus():
                     current_tab.changeStatus(False)
-
+    # TODO
     def create_new_open_tab(self, absolute_path):
         # 照样分割路径
         absolute_path = os.path.normpath(absolute_path)
@@ -669,11 +669,13 @@ class IndexWindow(QMainWindow):
     def gotoDeclaration(self, editor):
         position, selected_text = editor.getSelected_Position_Content()
         locations = []
-        absolute_path = editor.filepath
+        absolute_path = editor.filepath + '/' + editor.filename
         # 过滤选中的字符
         selected_text = editor.getSelectdFunctionName(selected_text)
         if self.source_data == None or self.current_source_path == None:
             self.source_data = self.getFuncAnalyzer(editor=editor)
+            self.current_source_path = os.path.normpath(absolute_path)
+        if self.source_data and self.current_source_path == None:
             self.current_source_path = os.path.normpath(absolute_path)
         elif self.current_source_path and self.current_source_path != os.path.normpath(absolute_path):
             self.current_source_path = os.path.normpath(absolute_path)
@@ -740,11 +742,13 @@ class IndexWindow(QMainWindow):
     def gotoDefinition(self, editor):
         position, selected_text = editor.getSelected_Position_Content()
         locations = []
-        absolute_path = editor.filepath
+        absolute_path = editor.filepath + '/' + editor.filename
         selected_text = editor.getSelectdFunctionName(selected_text)
 
         if self.source_data == None or self.current_source_path == None:
             self.source_data = self.getFuncAnalyzer(editor=editor)
+            self.current_source_path = os.path.normpath(absolute_path)
+        if self.source_data and self.current_source_path == None:
             self.current_source_path = os.path.normpath(absolute_path)
         elif self.current_source_path and self.current_source_path != os.path.normpath(absolute_path):
             self.current_source_path = os.path.normpath(absolute_path)
@@ -812,10 +816,12 @@ class IndexWindow(QMainWindow):
     def gotoCallExpress(self, editor):
         position, selected_text = editor.getSelected_Position_Content()
         locations = []
-        absolute_path = editor.filepath
+        absolute_path = editor.filepath + '/' + editor.filename
         selected_text = editor.getSelectdFunctionName(selected_text)
         if self.source_data == None or self.current_source_path == None:
             self.source_data = self.getFuncAnalyzer(editor=editor)
+            self.current_source_path = os.path.normpath(absolute_path)
+        if self.source_data and self.current_source_path == None:
             self.current_source_path = os.path.normpath(absolute_path)
         elif self.current_source_path and self.current_source_path != os.path.normpath(absolute_path):
             self.current_source_path = os.path.normpath(absolute_path)
@@ -826,13 +832,13 @@ class IndexWindow(QMainWindow):
             isSource = False
 
         if self.source_data:
-            locations = []
             for data in self.source_data:
                 # 文件名
                 filename = data.filepath
                 # 调用
                 function_callexpress_list = data.source_obj.function_callexpress_list
-                # 头文件
+                # 记得清空 不然GG
+                locations = []
                 for per_obj in function_callexpress_list:
                     if selected_text == per_obj.function_name and per_obj.call_express_contents:
                         location = per_obj.call_express_location

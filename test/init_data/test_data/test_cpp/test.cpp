@@ -1,6 +1,12 @@
 #include "test.h"
-#include "test_headers.h"
-int hub(int a, int b)
+void func()
 {
-    return (a-b);
+    printf("This is the first function.\n");
+}
+int main()
+{
+    func();
+    int res = multi(2, 4);
+    test(res);
+    print();
 }

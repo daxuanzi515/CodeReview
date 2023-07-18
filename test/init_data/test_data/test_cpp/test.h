@@ -1,3 +1,5 @@
 #include<stdio.h>
-int hub(int a, int b);
-void sum();
+
+void print();
+int multi(int a,int b);
+void test(int x);

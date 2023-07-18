@@ -240,6 +240,8 @@ class SearchReplaceWindow(QDialog):
             current_line = start_line
             current_index = start_index
             while True:
+                if current_line > end_line:
+                    break
                 state = (
                     self.ui.re_s.isChecked(),  # regexp
                     self.ui.cs_s.isChecked(),  # cs
@@ -253,8 +255,8 @@ class SearchReplaceWindow(QDialog):
                 if (current_index >= end_index and current_line == end_line) or (current_line > end_line):
                     break
                 flag = current_tab.search_interface(input_string, *state)
+
                 if flag:
-                    count += 1
                     found_pos = current_tab.send_signal(parameter1='SCI_GETCURRENTPOS', parameter2=None)
                     found_line = current_tab.send_signal(parameter1='SCI_LINEFROMPOSITION', parameter2=found_pos)
                     found_index = found_pos - current_tab.send_signal(parameter1='SCI_POSITIONFROMLINE',
@@ -271,6 +273,7 @@ class SearchReplaceWindow(QDialog):
                     else:
                         positions.add(
                             (found_line, found_index, found_line, found_index + len(input_string)))  # 记录匹配的位置（行号和索引）
+                    count += 1
                 else:
                     # 这里是维持光标移动的精髓
                     if current_index <= end_index:

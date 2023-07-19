@@ -13,4 +13,5 @@
 /data/reports/
 /data/rules/
 /data/logs/
+src/config/config_.ini
 src/utils/compile/clang.exe

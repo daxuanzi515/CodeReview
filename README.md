@@ -57,7 +57,7 @@ project_name = 你项目文件夹所在位置\
 db_password = 你的密码
 ...
 ```
-
+后期给加密了，所以无法修改...，破解版在test分支里0-0
 ## 数据库
 
 如果你想要用`QtSql`，那问题会像蚂蚁一样多！
@@ -260,7 +260,7 @@ iterAST(AST_Root)
 
 如果在文件里存在标准头文件，就会把里面的函数一起分析了，这就会分析上千行......
 
-#### 解决方案
+#### 初级解决方案
 
 在文本编辑器里面显示源文件带头文件的内容，但是我实际上分析的时候，传入的内容是含注释掉头文件的源文件内容.
 
@@ -336,6 +336,124 @@ def preProcessTools(filename, keyword):
     # ... 基本照猫画虎 大致思路如上 看具体代码的时候能更清楚地明白我在说什么??0-<我自己写的时候都蒙圈好几次
 ```
 
+#### 中级解决方案
+优化函数调用，加上三种类型判断
+
+1. 只有一个源文件 >> ???.c/???.cpp
+
+    函数声明、定义、调用都在同一个源文件里
+
+2. 只有一个源文件和多个头文件 >> ???.c/???.cpp + (??.h,???.h,????.h)
+
+    函数声明/定义在头文件,源文件可能含声明、定义、调用
+
+3. 多个源文件和多个头文件，但只有一个源文件含`main`函数 >> ???.cpp/????.cpp/main.cpp +  (??.h,???.h,????.h)
+
+    函数声明/定义在头文件,除`main`函数以外的源文件可能包含声明、定义,含`main`的源文件可能包含声明、定义、调用
+
+把所有源文件的内容拼接在一起，最后拼接`main`函数的内容...组合器问世！
+```python
+# 组合器
+class DefinitionCallExpressCombiner:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.headers = []
+        self.main_sign = None
+        self.definition_contents = []
+        self.mix_contents = []
+        self.main_length = 0
+        self.offset_length = 0
+
+    def find_all_files(self, filepath):
+        directory, _ = os.path.split(filepath)
+        file_list = []
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.c') or file.endswith('.cpp'):
+                    file_list.append(os.path.abspath(os.path.join(root, file)))
+        return file_list
+
+    def has_main_function(self, file_path):
+        with open(file_path, "r") as file:
+            content = file.read()
+            return "int main(" in content
+
+    def getDefinitionCodes(self):
+        source_files = self.find_all_files(self.file_path)
+        for file_path in source_files:
+            with open(file_path, "r") as file:
+                content = file.readlines()
+                if self.has_main_function(file_path):
+                    if self.main_sign is None:
+                        self.main_sign = file_path
+                    else:
+                        # print('main function is None.')
+                        pass
+                else:
+                    self.definition_contents += content
+
+    def Combiner(self):
+        self.getDefinitionCodes()
+        path, name = split(self.main_sign)
+        name = '.' + name
+        temp_path = os.path.join(path, name)
+        with open(self.main_sign, "r", encoding='utf-8') as main_file:
+            main_file_content = main_file.readlines()
+            self.main_length = len(main_file_content)
+        last_line = self.definition_contents[-1]
+        if last_line == '}\n':
+            pass
+        elif last_line == '}':
+            self.definition_contents[-1] = '}\n'
+        if main_file_content:
+            self.mix_contents = self.definition_contents + main_file_content
+
+        new_data = ["//" + line if line.startswith("#include") else line for line in self.mix_contents]
+        with open(temp_path, 'w', encoding='utf-8') as temp_obj:
+            temp_obj.writelines(new_data)
+        self.offset_length = len(new_data) - self.main_length
+        return temp_path
+```
+调用这个函数计算真正的`main`函数声明、定义、调用函数的位置坐标，覆盖临时文件的数据，返回数据
+```python
+    def multiCallExpressCombiner(self, filepath):
+        combiner = DefinitionCallExpressCombiner(filepath)
+        temp_filepath = combiner.Combiner()
+        call_analyzer = FunctionDump(temp_filepath)
+        call_analyzer.analyseLauncher()
+        os.remove(temp_filepath)
+
+        offset = combiner.offset_length
+        function_declaration_list = []
+        function_definition_list = []
+        function_call_express_list = []
+        for item in call_analyzer.function_declaration_list:
+            if item.declared_location[0] > offset:
+                start_line, start_index, end_line, end_index = item.declared_location
+                item.declared_location = (start_line - offset, start_index, end_line - offset, end_index)
+                function_declaration_list.append(item)
+            else:
+                continue
+        for item in call_analyzer.function_definition_list:
+            if item.definition_location[0] > offset:
+                start_line, start_index, end_line, end_index = item.definition_location
+                item.definition_location = (start_line - offset, start_index, end_line - offset, end_index)
+                function_definition_list.append(item)
+            else:
+                continue
+        for item in call_analyzer.function_callexpress_list:
+            if item.call_express_location[0] > offset:
+                start_line, start_index, end_line, end_index = item.call_express_location
+                item.call_express_location = (start_line - offset, start_index, end_line - offset, end_index)
+                function_call_express_list.append(item)
+            else:
+                continue
+        # 覆盖原文
+        call_analyzer.function_declaration_list = function_declaration_list
+        call_analyzer.function_definition_list = function_definition_list
+        call_analyzer.function_callexpress_list = function_call_express_list
+        return call_analyzer
+```
 ## 下载文件
 
 登录之后的用户进主页面 进行代码审计之后生成的报告文件

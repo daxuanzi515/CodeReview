@@ -4,7 +4,7 @@ from PyQt5.QtCore import QThread, QEventLoop, QTimer
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QMainWindow
 from src.utils.log.log import Log
-
+# 自定义线程类
 class PrintThread(QThread):
     signalForText = QtCore.pyqtSignal(str)
 
@@ -28,7 +28,7 @@ class Terminal(QMainWindow):
         super(Terminal, self).__init__(parent)
         self.thr = PrintThread(data='')
         self.thr.signalForText.connect(self.addData)
-        # 把系统输出重定向输出到PrintThread
+        # 把系统输出重定向输出到PrintThread对象
         sys.stdout = self.thr
         self.TextEditor = parent.ui.terminal_c
         self.LineEditor = parent.ui.input_bash
@@ -40,6 +40,8 @@ class Terminal(QMainWindow):
         self.user_id = None
 
     def addData(self, text):
+        # 通过print输出的所有内容 将从控制台重定向到界面上
+        # 就是说只要print()使用 就会打到界面上
         cursor = self.TextEditor.textCursor()
         cursor.movePosition(QTextCursor.End)
         cursor.insertText(text)

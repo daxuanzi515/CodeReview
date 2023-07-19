@@ -1,13 +1,15 @@
 from PyQt5 import Qsci, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QCursor, QPixmap
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QComboBox
 from src.utils.log.log import Log
 # test
 # from Tools import CustomMessageBox
 
 # run
 from .Tools import CustomMessageBox
+
+
 
 
 class SearchReplaceWindow(QDialog):
@@ -69,12 +71,8 @@ class SearchReplaceWindow(QDialog):
     def replace_single_string(self):
         self.replace_pos.clear()
         self.select_replace_pos.clear()
-
         init_word = self.ui.input_r.currentText()
         replace_word = self.ui.input_r_.currentText()
-        # 加入待选列表
-        self.ui.input_r.addItem(init_word)
-        self.ui.input_r_.addItem(replace_word)
         forward = self.isfoward()
         if replace_word and init_word:
             current_tab = self.father.currentWidget()
@@ -87,7 +85,7 @@ class SearchReplaceWindow(QDialog):
                     forward,  # 向前向后？
                     -1,  # 行
                     -1,  # 下标
-                    True, False, False)
+                    True, False) #, False)
                 isfind = current_tab.search_interface(init_word, *state)
                 # 获取位置 选中 替换...
                 if isfind:
@@ -110,9 +108,6 @@ class SearchReplaceWindow(QDialog):
         self.select_replace_pos.clear()
         init_word = self.ui.input_r.currentText()
         replace_word = self.ui.input_r_.currentText()
-        # 加入待选列表
-        self.ui.input_r.addItem(init_word)
-        self.ui.input_r_.addItem(replace_word)
         forward = self.isfoward()
         count = 0
         pos = set()
@@ -161,8 +156,7 @@ class SearchReplaceWindow(QDialog):
         self.keywords_pos.clear()
         # 获取输入
         input_string = self.ui.input_s.currentText()
-        # 加入待选列表
-        self.ui.input_s.addItem(input_string)
+        # 判断重复和大小写
         current_tab = self.father.currentWidget()
         if input_string and current_tab:
             # 太棒了！ 我逐渐理解一切。
@@ -219,8 +213,6 @@ class SearchReplaceWindow(QDialog):
         self.keywords_pos.clear()
         # 获取输入
         input_string = self.ui.input_s.currentText()
-        # 加入待选列表
-        self.ui.input_s.addItem(input_string)
         current_tab = self.father.currentWidget()
         if current_tab.getSelectionState() == (-1, -1, -1, -1):
             message_box = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text='请先选中一个区域！')

@@ -329,6 +329,9 @@
           <pointsize>12</pointsize>
          </font>
         </property>
+        <property name="insertPolicy">
+         <enum>QComboBox::InsertAlphabetically</enum>
+        </property>
        </widget>
       </item>
       <item>

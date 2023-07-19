@@ -226,7 +226,7 @@ class LoginWindow(QWidget):
             'data/reports/img',
             'data/reports/docx',
             'data/rules',
-            'data/logs'
+            'data/logs',
             'data/tags'
         ]
         for folder in nested_folders:

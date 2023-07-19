@@ -145,6 +145,7 @@ class AES_report:
             file.close()
         return self.de_md_path
 
+
 class IntoFiles:
     def __init__(self, info, config_ini):
         self.sql = SQL(config_ini=config_ini)

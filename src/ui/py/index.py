@@ -159,6 +159,8 @@ class IndexWindow(QMainWindow):
         self.ui.run_c.triggered.connect(self.run_c)
         # 编译并运行
         self.ui.compile_run_c.triggered.connect(self.compile_run_c)
+        # 查看日志
+        self.ui.check_log.triggered.connect(self.check_log)
 
     def risk_check(self, fileName):
         riskfind = RiskFind(self.funlist, self.vallist, fileName)
@@ -1118,11 +1120,12 @@ class IndexWindow(QMainWindow):
         self.unit_Icon_Shortcut(self.ui.search_replace, 'ui_search', 'Ctrl+F')
         self.unit_Icon_Shortcut(self.ui.generate_img, 'ui_generate_img', 'Ctrl+I')
         self.unit_Icon_Shortcut(self.ui.generate_report, 'ui_report', 'Ctrl+R')
-        self.unit_Icon_Shortcut(self.ui.check_report, 'ui_check_report', 'Ctrl+L')
+        self.unit_Icon_Shortcut(self.ui.check_report, 'ui_check_report', 'Ctrl+K')
         self.unit_Icon_Shortcut(self.ui.terminal, 'ui_terminal', 'Ctrl+T')
         self.unit_Icon_Shortcut(self.ui.compiler_c, 'ui_compile', 'Alt+F9')
         self.unit_Icon_Shortcut(self.ui.run_c, 'ui_run', 'Alt+F10')
         self.unit_Icon_Shortcut(self.ui.compile_run_c, 'ui_compile_run', 'Alt+F5')
+        self.unit_Icon_Shortcut(self.ui.check_log, 'ui_log', 'Ctrl+L')
 
     def unit_Icon_Shortcut(self, component, path, shortcut):
         icon = QIcon(self.config_ini['main_project']['project_name'] + self.config_ini['ui_img'][path])
@@ -1143,6 +1146,19 @@ class IndexWindow(QMainWindow):
         else:
             self.ui.info_tree_widget.clear()
             self.ui.show_tree_widget.clear()
+
+    # TODO
+    def check_log(self):
+        message_box = OpenFileMessage(icon=QIcon(self.ui_icon),text='是否打开用户操作日志？')
+        message_box.openn.connect(self.log_open)
+        message_box.later.connect(self.laterview)
+        message_box.exec_()
+
+    def log_open(self):
+        path = (self.config_ini['main_project']['project_name']+ self.config_ini['log']['log_file']).format(self.user_id, 'Log')
+        url = QUrl.fromLocalFile(path)
+        QDesktopServices.openUrl(url)
+
     # override
     def enterEvent(self, event):
         # 鼠标进入部件时更换光标
@@ -1176,7 +1192,7 @@ class IndexWindow(QMainWindow):
             'data/reports/img',
             'data/reports/docx',
             'data/rules',
-            'data/logs'
+            'data/logs',
             'data/tags'
         ]
         for folder in nested_folders:

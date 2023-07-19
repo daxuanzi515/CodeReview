@@ -277,10 +277,17 @@ QTreeView::branch:open:has-children
     <addaction name="separator"/>
     <addaction name="compile_run_c"/>
    </widget>
+   <widget class="QMenu" name="log">
+    <property name="title">
+     <string>日志</string>
+    </property>
+    <addaction name="check_log"/>
+   </widget>
    <addaction name="file_manager"/>
    <addaction name="text_operator"/>
    <addaction name="func"/>
    <addaction name="c_operator"/>
+   <addaction name="log"/>
   </widget>
   <action name="open">
    <property name="text">
@@ -385,6 +392,11 @@ QTreeView::branch:open:has-children
   <action name="check_report">
    <property name="text">
     <string>查看报告</string>
+   </property>
+  </action>
+  <action name="check_log">
+   <property name="text">
+    <string>查看日志</string>
    </property>
   </action>
  </widget>

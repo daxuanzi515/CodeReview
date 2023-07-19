@@ -199,9 +199,14 @@ class DefinitionCallExpressCombiner:
                     if self.main_sign is None:
                         self.main_sign = file_path
                     else:
-                        # print('main function is None.')
                         pass
                 else:
+                    last_line = content[-1]
+                    pattern = r'.*\n'
+                    if re.findall(pattern, last_line):
+                        pass
+                    else:
+                        content[-1] = last_line + '\n'
                     self.definition_contents += content
 
     def Combiner(self):
@@ -213,10 +218,12 @@ class DefinitionCallExpressCombiner:
             main_file_content = main_file.readlines()
             self.main_length = len(main_file_content)
         last_line = self.definition_contents[-1]
-        if last_line == '}\n':
+        pattern = r'.*\n'
+        if re.findall(pattern, last_line):
             pass
-        elif last_line == '}':
-            self.definition_contents[-1] = '}\n'
+        else:
+            self.definition_contents[-1] = last_line + '\n'
+
         if main_file_content:
             self.mix_contents = self.definition_contents + main_file_content
 

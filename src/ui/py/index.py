@@ -205,16 +205,25 @@ class IndexWindow(QMainWindow):
 
     # 判断是否是含主函数main的文件
     def main_detector(self, filename):
-        with open(filename, 'r', encoding='utf-8') as detector:
-            content = detector.read()
-            return "int main(" in content
+        if filename:
+            with open(filename, 'r', encoding='utf-8') as detector:
+                content = detector.read()
+                return "int main(" in content
+        else:
+            return False
 
     def openfile(self):
         test_path = self.config_ini["main_project"]["project_name"] + self.config_ini["test"]["folder_path"]
         fileName, isOk = QFileDialog.getOpenFileName(self, "选取文件", test_path, "C/C++源文件 (*.c *.cpp)")
         path = ''
         name = ''
-        if self.main_detector(fileName):
+        if fileName:
+            flag = self.main_detector(fileName)
+        else:
+            message_ = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text='您没有选择文件！')
+            message_.exec_()
+            return
+        if flag:
             if isOk:
                 path, name = split(fileName)
                 # 这里赋值

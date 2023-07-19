@@ -5,7 +5,8 @@ void func()
 }
 int main()
 {
-    func();
+	int a;
+	scanf("%d",&a);
     int res = multi(2, 4);
     test(res);
     print();

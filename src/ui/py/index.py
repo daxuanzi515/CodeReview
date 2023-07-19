@@ -315,7 +315,6 @@ class IndexWindow(QMainWindow):
                 file.close()
                 if current_tab.getStatus():
                     current_tab.changeStatus(False)
-    # TODO
     def create_new_open_tab(self, absolute_path):
         # 照样分割路径
         absolute_path = os.path.normpath(absolute_path)
@@ -423,6 +422,7 @@ class IndexWindow(QMainWindow):
         search_ui_data, _ = uic.loadUiType(search_ui_path)
         # 放入配置、ui_data、父亲窗口
         self.search_replace_window = SearchReplaceWindow(config_ini=self.config_ini, ui_data=search_ui_data, parent=self)
+        self.search_replace_window = SearchReplaceWindow(config_ini=self.config_ini, ui_data=search_ui_data, parent=self)
         self.search_replace_window.clear_indicator.connect(self.clear_all_indicator_sign)
         self.search_replace_window.show()
 
@@ -463,7 +463,6 @@ class IndexWindow(QMainWindow):
                                             + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
         url = QUrl.fromLocalFile(img_path)
         QDesktopServices.openUrl(url)
-    # TODO
     def generate_report(self):
         self.message = GenerateFileMessage(icon=QIcon(self.ui_icon), text='选择导出文件类型以及是否加密')
         self.message.docx.connect(self.docx_file)
@@ -657,7 +656,6 @@ class IndexWindow(QMainWindow):
         else:
             os.remove(file_path)
 
-    # TODO
     # 主分析函数
     def getFuncAnalyzer(self, editor):
         filename = editor.filename
@@ -813,7 +811,6 @@ class IndexWindow(QMainWindow):
                         end_index = location[3] - 1
                         text_location = [(start_line, start_index, end_line, end_index)]
                         another_editor.highlight_function_definition(text_location)
-    # TODO
     # 调用跳转
     def gotoCallExpress(self, editor):
         position, selected_text = editor.getSelected_Position_Content()
@@ -890,15 +887,15 @@ class IndexWindow(QMainWindow):
         self.ui.info_tree_widget.clear()
         funlist = funlist
         vallist = vallist
-        filename = self.c_sour_file
+        filename = os.path.normpath(self.c_sour_file)
         file = QTreeWidgetItem(self.ui.info_tree_widget)
         file.setText(0, "文件名" + filename)
         fun = QTreeWidgetItem(self.ui.info_tree_widget)
-        fun.setText(0, "主函数main")
+        fun.setText(0, "函数")
         val = QTreeWidgetItem(self.ui.info_tree_widget)
         val.setText(0, "变量")
         for i in funlist:
-            if i.filepath == filename:
+            if  os.path.normpath(i.filepath) == filename:
                 child = QTreeWidgetItem(fun)
                 child.setText(0, i.name + '(' + i.line + ')')
                 child.setText(1, i.val_type)
@@ -908,7 +905,7 @@ class IndexWindow(QMainWindow):
                         child1.setText(0, l.name + '(' + l.line + ')')
                         child1.setText(1, l.val_type)
         for i in vallist:
-            if i.filepath == filename:
+            if os.path.normpath(i.filepath) == filename:
                 if i.type == 'v':
                     child = QTreeWidgetItem(val)
                     child.setText(0, i.name + '(' + i.line + ')')
@@ -935,7 +932,8 @@ class IndexWindow(QMainWindow):
         elif name.endswith(".h"):
             ctagsfile = name.replace(".h", "h.txt")
         if name.endswith(".c") or name.endswith(".cpp") or name.endswith(".h"):
-            self.c_sour_file = path + "/" + name
+            c_sour_file = path + "/" + name
+            self.c_sour_file = os.path.normpath(c_sour_file)
             ctagsfile = self.config_ini["main_project"]["project_name"] + self.config_ini["ctags"]["txt"] + ctagsfile
             ctagsexe = self.config_ini["main_project"]["project_name"] + self.config_ini["ctags"]["ctags"]
             fun_val = funvaluefind(self.c_sour_file, ctagsfile, ctagsexe)
@@ -1146,7 +1144,6 @@ class IndexWindow(QMainWindow):
             self.ui.info_tree_widget.clear()
             self.ui.show_tree_widget.clear()
 
-    # TODO
     def check_log(self):
         message_box = OpenFileMessage(icon=QIcon(self.ui_icon),text='是否打开用户操作日志？')
         message_box.openn.connect(self.log_open)

@@ -864,6 +864,7 @@ class IndexWindow(QMainWindow):
 
     def check_report(self):
         report_path = self.config_ini["main_project"]["project_name"] + 'data/reports/'
+        fileName, isOk = QFileDialog.getOpenFileName(self, "选取文件", report_path, "文档文件 (*.docx *.pdf *.md)")
         self.checked = self.message.checked
         if self.checked:
             for root, dirs, files in os.walk(report_path):
@@ -871,12 +872,10 @@ class IndexWindow(QMainWindow):
                     if file.startswith('report') or file.startswith('dereport'):
                         file_path = os.path.normpath(os.path.join(root, file))
                         os.remove(file_path)
-            fileName, isOk = QFileDialog.getOpenFileName(self, "选取文件", report_path, "文档文件 (*.docx *.pdf *.md)")
             if isOk:
                 aes, _, decryptor = self.initial()
                 self.open_now(fileName, decryptor, aes)
         else:
-            fileName, isOk = QFileDialog.getOpenFileName(self, "选取文件", report_path, "文档文件 (*.docx *.pdf *.md)")
             if isOk:
                 self.open_now(fileName, None, None)
 

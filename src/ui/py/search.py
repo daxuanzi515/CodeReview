@@ -217,7 +217,7 @@ class SearchReplaceWindow(QDialog):
         if current_tab.getSelectionState() == (-1, -1, -1, -1):
             message_box = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text='请先选中一个区域！')
             message_box.exec_()
-        elif input_string:
+        elif input_string and current_tab.getSelectionState() != (-1, -1, -1, -1):
             start_line = current_tab.send_signal_(Qsci.QsciScintilla.SCI_LINEFROMPOSITION,
                                                   Qsci.QsciScintilla.SCI_GETSELECTIONSTART)
             start_index = current_tab.send_signal_(Qsci.QsciScintilla.SCI_GETCOLUMN,
@@ -267,13 +267,12 @@ class SearchReplaceWindow(QDialog):
                             (found_line, found_index, found_line, found_index + len(input_string)))  # 记录匹配的位置（行号和索引）
                     count += 1
                 else:
-                    # 这里是维持光标移动的精髓
-                    if current_index <= end_index:
+                    # 搜不到就需要换行....
+                    if current_index <= end_index and current_line <= end_line:
                         current_index += len(input_string)
-                    else:
-                        if current_line <= end_index:
-                            current_index = 0
-                            current_line += 1
+                    elif current_line <= end_line and current_index > end_index:
+                        current_index = 0
+                        current_line += 1
             self.select_keywords_pos = list(positions)
             current_tab.multi_highlight_text(self.select_keywords_pos)
             self.ui.msg1.setText(f"共搜索到关键词: '{input_string}'  {count}次！")

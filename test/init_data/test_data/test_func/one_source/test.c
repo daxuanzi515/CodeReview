@@ -1,26 +1,14 @@
-#include<stdio.h>
-
-int add(int a, int b);
-int sub(int a,int b);
+#include <stdio.h>
 void func();
-
-int add(int a,int b)
-{
-	return a+b;
-}
-int sub(int a,int b)
-{
-	return (a-b);
-}
 void func()
 {
-	printf("%d\n",1001);
+	printf("%d",1000);
 }
-
 int main()
 {
-	int res = add(105,-1);
-	printf("%d\n",res);
+	int a;
+	scanf("%d",&a);
+	printf("a= %d\n",a);
 	func();
-	return 0;
+	return 0;	
 }

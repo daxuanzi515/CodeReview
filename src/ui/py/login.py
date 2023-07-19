@@ -45,7 +45,6 @@ class LoginWindow(QWidget):
         self.ui.login.clicked.connect(self.login_check)
         self.ui.change.clicked.connect(self.change_password)
 
-        # test
         self.ui.username.setText('test1')
         self.ui.password.setText('zxcv4321')
 

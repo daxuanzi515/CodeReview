@@ -203,42 +203,51 @@ class IndexWindow(QMainWindow):
             child.setText(4, i.type)
         self.ui.show_tree_widget.expandAll()
 
+    # 判断是否是含主函数main的文件
+    def main_detector(self, filename):
+        with open(filename, 'r', encoding='utf-8') as detector:
+            content = detector.read()
+            return "int main(" in content
+
     def openfile(self):
         test_path = self.config_ini["main_project"]["project_name"] + self.config_ini["test"]["folder_path"]
         fileName, isOk = QFileDialog.getOpenFileName(self, "选取文件", test_path, "C/C++源文件 (*.c *.cpp)")
         path = ''
         name = ''
-        if isOk:
-            path, name = split(fileName)
-            # 这里赋值
-            self.c_sour_filename = name
-            # 展示右侧树状列表
-            self.fun_val_tree(path, name)
-            #风险函数，无效函数，无效变量检测
-            self.risk_check(fileName)
+        if self.main_detector(fileName):
+            if isOk:
+                path, name = split(fileName)
+                # 这里赋值
+                self.c_sour_filename = name
+                # 展示右侧树状列表
+                self.fun_val_tree(path, name)
+                #风险函数，无效函数，无效变量检测
+                self.risk_check(fileName)
 
-            with open(fileName, 'r', encoding='utf-8') as file_obj:
-                content = file_obj.read()
-            file_obj.close()
-        if path:
-            self.file_model.setRootPath(path)
-            self.file_model.setNameFilters(["*.c", "*.cpp", "*.h"])
-            self.file_model.setNameFilterDisables(False)
-            self.ui.file_tree_view.setModel(self.file_model)
-            self.ui.file_tree_view.setRootIndex(self.file_model.index(path))  # 只显示设置的那个文件路径
-            # 双击打开文件 到编辑器...
-            # 然后直接代码审计...../ 点击按钮才审计....
-            # 先不判断main直接打开
-            text_editor_obj = TextEditorWidget(filename=name, filepath=path)
-            text_editor_obj.addText(content=content)
-            self.ui.text_editor.addTab(text_editor_obj, text_editor_obj.filename)
-            self.ui.text_editor.setCurrentWidget(text_editor_obj)
-            # 一些逻辑
-            self.source_data = self.getFuncAnalyzer(editor=text_editor_obj)
-            text_editor_obj.gotoDeclarationSign.connect(lambda : self.gotoDeclaration(text_editor_obj))
-            text_editor_obj.gotoDefinitionSign.connect(lambda : self.gotoDefinition(text_editor_obj))
-            text_editor_obj.gotoCallExpressSign.connect(lambda : self.gotoCallExpress(text_editor_obj))
-            self.enable_operation.emit()
+                with open(fileName, 'r', encoding='utf-8') as file_obj:
+                    content = file_obj.read()
+                file_obj.close()
+            if path:
+                self.file_model.setRootPath(path)
+                self.file_model.setNameFilters(["*.c", "*.cpp", "*.h"])
+                self.file_model.setNameFilterDisables(False)
+                self.ui.file_tree_view.setModel(self.file_model)
+                self.ui.file_tree_view.setRootIndex(self.file_model.index(path))  # 只显示设置的那个文件路径
+                # 双击打开文件 到编辑器...
+                # 然后直接代码审计...../ 点击按钮才审计....
+                text_editor_obj = TextEditorWidget(filename=name, filepath=path)
+                text_editor_obj.addText(content=content)
+                self.ui.text_editor.addTab(text_editor_obj, text_editor_obj.filename)
+                self.ui.text_editor.setCurrentWidget(text_editor_obj)
+                # 一些逻辑
+                self.source_data = self.getFuncAnalyzer(editor=text_editor_obj)
+                text_editor_obj.gotoDeclarationSign.connect(lambda : self.gotoDeclaration(text_editor_obj))
+                text_editor_obj.gotoDefinitionSign.connect(lambda : self.gotoDefinition(text_editor_obj))
+                text_editor_obj.gotoCallExpressSign.connect(lambda : self.gotoCallExpress(text_editor_obj))
+                self.enable_operation.emit()
+        else:
+            message = CustomMessageBox(icon=QIcon(self.ui_icon),text="文件中不存在main函数, 请重新选择文件！",title='提示')
+            message.exec_()
 
     def createfile(self):
         # 打开文件夹，创建新文件，然后保存，打开

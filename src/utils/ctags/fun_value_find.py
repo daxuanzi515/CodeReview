@@ -3,8 +3,8 @@ import re
 
 
 class FunctionValue:
-    def __init__(self, filepath = '', name = '', val_type = '', type = "",line = ""):
-        self.filepath = None
+    def __init__(self, filepath="", name="", val_type="", type="",line=""):
+        self.filepath = filepath
         self.name = name
         self.val_type = val_type
         self.type = type
@@ -28,7 +28,7 @@ class funvaluefind():
     def get_all_file(self, filepath):
         list = []
         files = os.listdir(filepath)
-        if re.match(".*\.c$", self.filename) is not None:
+        if re.match(".*\.c$", self.filename) or re.match(".*\.cpp$", self.filename) or re.match(".*\.h$", self.filename):
             for fi in files:
                 if re.match("(\w*)\.c$",fi) != None:
                     fi_d = filepath + '/' + fi
@@ -40,14 +40,7 @@ class funvaluefind():
                     # 如果不目录
                     if not os.path.isdir(fi_d):
                         list.append(fi_d)
-        elif re.match(".*\.cpp$", self.filename) is not None:
-            for fi in files:
                 if re.match("(\w*)\.cpp$",fi) != None:
-                    fi_d = filepath + '/' + fi
-                    # 如果不目录
-                    if not os.path.isdir(fi_d):
-                        list.append(fi_d)
-                if re.match("(\w*)\.h$", fi) != None:
                     fi_d = filepath + '/' + fi
                     # 如果不目录
                     if not os.path.isdir(fi_d):
@@ -87,7 +80,9 @@ class funvaluefind():
                     else:
                         if fun.type == "s":
                             fun.val_type = "struct"
-                        self.vallist.append(fun)
+                            self.vallist.append(fun)
+                        if fun.type == "v":
+                            self.vallist.append(fun)
             elif len(split_line) == 9:
                 fun.line = split_line[5]
                 fun.type = split_line[4]

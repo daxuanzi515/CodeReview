@@ -44,13 +44,13 @@ class RiskFind(object):
         self.filelist = []
         files = os.listdir(filepath)
         for fi in files:
-            if self.inifile.endswith(".c"):
+            if self.inifile.endswith(".c") or self.inifile.endswith(".cpp") or self.inifile.endswith(".h"):
                 if re.match("(\w*)\.c$", fi) != None:
                     fi_d = filepath + '/' + fi
                     # 如果不目录
                     if not os.path.isdir(fi_d):
                         self.filelist.append(fi_d)
-                if re.match("(\w*)\.cpp$", fi) != None:
+                if re.match("(\w*)\.h$", fi) != None:
                     fi_d = filepath + '/' + fi
                     # 如果不目录
                     if not os.path.isdir(fi_d):
@@ -60,6 +60,7 @@ class RiskFind(object):
                     # 如果不目录
                     if not os.path.isdir(fi_d):
                         self.filelist.append(fi_d)
+
     def invalid_find(self, fun, l, fn):
         le = Run_Lexer(inFile=fn)
         le.runLexer()

@@ -22,7 +22,7 @@ from clang.cindex import Config as cl_config
 clang_path = r'E:\formalFiles\LLVM\bin\libclang.dll'
 cl_config.set_library_file(clang_path)
 from src.utils.funcdump.funcdump import FunctionPreprocessor
-
+import matplotlib.pyplot as plt
 # test
 # from Tools import ReplaceMessage, CustomMessageBox, SaveMessage, RemoveMessage, GenerateFileMessage, OpenFileMessage
 # from search import SearchReplaceWindow
@@ -340,7 +340,7 @@ class IndexWindow(QMainWindow):
         absolute_path = os.path.normpath(absolute_path)
         path, name = split(absolute_path)
         if name.endswith(".c") or name.endswith(".cpp") or name.endswith(".h"):
-            # self.fun_val_tree(path, name)
+            self.fun_val_tree(path, name)
             self.tree_display(absolute_path)
         else:
             self.ui.info_tree_widget.clear()
@@ -463,6 +463,7 @@ class IndexWindow(QMainWindow):
     def setScannerRule(self):
         self.scanner_rule = (self.config_ini['main_project']['project_name'] + self.config_ini['scanner']['defined_rule']).format(self.user_id)
 
+
     def generate_img(self):
         riskdatas = []
         for i in self.riskfunlist:
@@ -482,8 +483,8 @@ class IndexWindow(QMainWindow):
         logging = self.log_obj.returnString()
         self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
                                             + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
-        url = QUrl.fromLocalFile(img_path)
-        QDesktopServices.openUrl(url)
+        plt.show()
+
     def generate_report(self):
         self.message = GenerateFileMessage(icon=QIcon(self.ui_icon), text='选择导出文件类型以及是否加密')
         self.message.docx.connect(self.docx_file)

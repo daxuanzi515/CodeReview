@@ -181,7 +181,7 @@ class DefinitionCallExpressCombiner:
         file_list = []
         for root, _, files in os.walk(directory):
             for file in files:
-                if file.endswith('.c') or file.endswith('.cpp'):
+                if file.endswith('.c') or file.endswith('.cpp') or file.endswith('.h'):
                     file_list.append(os.path.abspath(os.path.join(root, file)))
         return file_list
 
@@ -287,7 +287,7 @@ class FunctionPreprocessor:
         file_list = []
         for root, _, files in os.walk(directory):
             for file in files:
-                if file.endswith('.c') or file.endswith('.cpp'):
+                if file.endswith('.c') or file.endswith('.cpp') or file.endswith('.h'):
                     absolute_path = os.path.abspath(os.path.join(root, file))
                     file_list.append(absolute_path)
                     if self.has_main_function(absolute_path):

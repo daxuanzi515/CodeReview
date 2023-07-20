@@ -145,6 +145,18 @@ class AES_report:
             file.close()
         return self.de_md_path
 
+    def AES_log(self, msg, encryptor):
+        msg = msg.encode('utf-8')
+        padder1 = padding.PKCS7(128).padder()
+        padded_msg_data = padder1.update(msg) + padder1.finalize()
+        md_ciphertext = encryptor.update(padded_msg_data) + encryptor.finalize()
+        return md_ciphertext
+
+    def de_log(self, msg, decryptor):
+        log_decrypted_data = decryptor.update(msg) + decryptor.finalize()
+        unpadder1 = padding.PKCS7(128).unpadder()
+        log_unpadded_data = unpadder1.update(log_decrypted_data) + unpadder1.finalize()
+        return log_unpadded_data
 
 class IntoFiles:
     def __init__(self, info, config_ini):

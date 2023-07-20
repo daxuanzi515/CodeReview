@@ -47,11 +47,11 @@ class funvaluefind():
                     # 如果不目录
                     if not os.path.isdir(fi_d):
                         list.append(fi_d)
-                    if re.match("(\w*)\.h$", fi) != None:
-                        fi_d = filepath + '/' + fi
-                        # 如果不目录
-                        if not os.path.isdir(fi_d):
-                            list.append(fi_d)
+                if re.match("(\w*)\.h$", fi) != None:
+                    fi_d = filepath + '/' + fi
+                    # 如果不目录
+                    if not os.path.isdir(fi_d):
+                        list.append(fi_d)
         return list
 
     def get_fun_value(self):

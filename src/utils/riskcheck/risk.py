@@ -50,7 +50,11 @@ class RiskFind(object):
                     # 如果不目录
                     if not os.path.isdir(fi_d):
                         self.filelist.append(fi_d)
-            elif self.inifile.endswith(".cpp"):
+                if re.match("(\w*)\.cpp$", fi) != None:
+                    fi_d = filepath + '/' + fi
+                    # 如果不目录
+                    if not os.path.isdir(fi_d):
+                        self.filelist.append(fi_d)
                 if re.match("(\w*)\.cpp$", fi) != None:
                     fi_d = filepath + '/' + fi
                     # 如果不目录
@@ -203,8 +207,9 @@ class RiskFind(object):
                 if f.name == "main":
                     self.validfun.append(f)
                 self.invalid_find(f, [], fn)
-                if self.inifile.endswith(".c") or self.inifile.endswith(".cpp"):
-                    self.leak_find(f)
+        for f in self.funlist:
+            if self.inifile.endswith(".c") or self.inifile.endswith(".cpp"):
+                self.leak_find(f)
 
         for f in list(set(self.funlist) - set(self.validfun)):
             if os.path.normpath(f.filepath) == os.path.normpath(self.inifile):

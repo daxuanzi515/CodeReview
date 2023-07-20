@@ -1154,8 +1154,10 @@ class IndexWindow(QMainWindow):
         if current_tab:
             self.source_data = self.getFuncAnalyzer(editor=current_tab)
             absolute_path = current_tab.filepath + '/' + current_tab.filename
+            absolute_path = os.path.normpath(absolute_path)
             if current_tab.filename.endswith(".c") or current_tab.filename.endswith(".cpp") or current_tab.filename.endswith(".h"):
                 self.fun_val_tree(current_tab.filepath, current_tab.filename)
+                self.tree_display(absolute_path)
                 self.risk_check(absolute_path)
             else:
                 self.ui.info_tree_widget.clear()

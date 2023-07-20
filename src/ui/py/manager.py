@@ -6,12 +6,15 @@ from src.utils.mysql.mysql import SQL
 from src.utils.log.log import Log
 # run
 from .Tools import CheckMessage, CustomMessageBox, DeleteDataMessage
+
+
 # test
 # from Tools import CheckMessage, CustomMessageBox, DeleteDataMessage
 
 
 class DangerManagerWindow(QDialog):
     set_scanner_rule = QtCore.pyqtSignal()
+
     def __init__(self, config_ini, ui_data, parent=None):
         super(DangerManagerWindow, self).__init__(parent)
         self.config_ini = config_ini
@@ -32,9 +35,11 @@ class DangerManagerWindow(QDialog):
             self.user_id = parent.user_id
             self.sql_obj = SQL(config_ini=parent.config_ini)
             self.father = parent
-            self.defined_rule_file = (self.config_ini['main_project']['project_name']+self.config_ini['scanner']['defined_rule']).format(self.user_id)
+            self.defined_rule_file = (self.config_ini['main_project']['project_name'] + self.config_ini['scanner'][
+                'defined_rule']).format(self.user_id)
 
-        self.common_rule_file = self.config_ini['main_project']['project_name']+self.config_ini['scanner']['common_rule']
+        self.common_rule_file = self.config_ini['main_project']['project_name'] + self.config_ini['scanner'][
+            'common_rule']
         # 获取表头
         header = self.ui.database.horizontalHeader()
 
@@ -65,15 +70,18 @@ class DangerManagerWindow(QDialog):
         # 选中的删除 没选的没法删
         line = self.ui.database.currentRow()
         if line >= 0:
-            msg = (self.ui.database.item(line, 0).text(), self.ui.database.item(line, 1).text(), self.ui.database.item(line, 2).text())
+            msg = (self.ui.database.item(line, 0).text(), self.ui.database.item(line, 1).text(),
+                   self.ui.database.item(line, 2).text())
             self.danger_func_data.discard(msg)
             self.ui.database.removeRow(self.ui.database.currentRow())
             # 修改导入的数据
             # 先查有没有这个数据 没有就不删除 有则删除
             self.sql_obj.connect_db()
-            res = self.sql_obj.select(table_name='danger_func', columns='func_name, level, solution', condition=f"user_id={self.user_id}")
+            res = self.sql_obj.select(table_name='danger_func', columns='func_name, level, solution',
+                                      condition=f"user_id={self.user_id}")
             if res and msg in res:
-                self.sql_obj.delete(table_name='danger_func', condition=f"user_id='{self.user_id}' and func_name='{msg[0]}' and level='{msg[1]}' and solution='{msg[2]}'")
+                self.sql_obj.delete(table_name='danger_func',
+                                    condition=f"user_id='{self.user_id}' and func_name='{msg[0]}' and level='{msg[1]}' and solution='{msg[2]}'")
             self.sql_obj.close_db()
             self.log_obj.inputValue(self.user_id, f'向风险函数数据库删除了一条数据:{msg}', '操作有风险')
             logging = self.log_obj.returnString()
@@ -93,6 +101,14 @@ class DangerManagerWindow(QDialog):
             message.exec_()
             return
         else:
+            # 数据已经存在表格里的时候并不会添加...
+            for row in range(self.ui.database.rowCount()):
+                if (name, level, solution) == (
+                        self.ui.database.item(row, 0).text(),
+                        self.ui.database.item(row, 1).text(),
+                        self.ui.database.item(row, 2).text()
+                ):
+                    return
             self.ui.database.insertRow(0)
             row_input = [name, level, solution]
             self.danger_func_data.add(tuple(row_input))
@@ -108,7 +124,7 @@ class DangerManagerWindow(QDialog):
         message_box = CheckMessage(icon=QIcon(self.ui_icon), text='您添加的规则将被写入数据库并作为下一次审计的附加规则，是否导入规则？')
         message_box.OK.connect(self.setScannerRule)
         message_box.exec_()
-        message_box_ = CustomMessageBox(icon=QIcon(self.ui_icon),title='提示',text='导入规则完成！')
+        message_box_ = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text='导入规则完成！')
         message_box_.exec_()
 
     def setScannerRule(self):
@@ -121,7 +137,8 @@ class DangerManagerWindow(QDialog):
                 'level': item[1],
                 'solution': item[2]
             }
-            res = self.sql_obj.select(table_name='danger_func', columns='user_id, func_name, level, solution', condition=f"user_id = '{self.user_id}'")
+            res = self.sql_obj.select(table_name='danger_func', columns='user_id, func_name, level, solution',
+                                      condition=f"user_id = '{self.user_id}'")
             if res != ():
                 target = (self.user_id, item[0], item[1], item[2])
                 for i in res:
@@ -135,7 +152,8 @@ class DangerManagerWindow(QDialog):
         self.sql_obj.close_db()
 
         self.sql_obj.connect_db()
-        res = self.sql_obj.select(table_name='danger_func', columns='user_id, func_name, level, solution', condition=f"user_id={self.user_id}")
+        res = self.sql_obj.select(table_name='danger_func', columns='user_id, func_name, level, solution',
+                                  condition=f"user_id={self.user_id}")
         self.sql_obj.close_db()
 
         input_new_data = []
@@ -215,19 +233,18 @@ class DangerManagerWindow(QDialog):
                 self.ui.database.setItem(current_row, i, per_item)
 
         self.sql_obj.connect_db()
-        res = self.sql_obj.select(table_name='danger_func', columns='user_id, func_name, level, solution', condition=f"user_id='{self.user_id}'")
+        res = self.sql_obj.select(table_name='danger_func', columns='user_id, func_name, level, solution',
+                                  condition=f"user_id='{self.user_id}'")
         self.sql_obj.close_db()
 
         if res != ():
             for item in res:
                 self.ui.database.insertRow(0)
                 for i in range(3):
-                    per_item = QTableWidgetItem(item[i+1])
+                    per_item = QTableWidgetItem(item[i + 1])
                     self.ui.database.setItem(0, i, per_item)
         else:
             pass
-
-
 
     # 重写
     def enterEvent(self, event):
@@ -239,7 +256,6 @@ class DangerManagerWindow(QDialog):
     def leaveEvent(self, event):
         # 鼠标离开部件时，恢复默认光标样式
         self.unsetCursor()
-
 
 # if __name__ == '__main__':
 #     config_obj = Config()

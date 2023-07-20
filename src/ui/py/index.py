@@ -230,6 +230,7 @@ class IndexWindow(QMainWindow):
                 self.c_sour_filename = name
                 # 展示右侧树状列表
                 self.fun_val_tree(path, name)
+                self.tree_display(fileName)
                 #风险函数，无效函数，无效变量检测
                 self.risk_check(fileName)
 
@@ -315,6 +316,7 @@ class IndexWindow(QMainWindow):
             self.source_data = self.getFuncAnalyzer(editor=current_tab)
         if name.endswith(".c") or name.endswith(".cpp") or name.endswith(".h"):
             self.fun_val_tree(path, name)
+            self.tree_display(absolute_path)
             self.risk_check(absolute_path)
         else:
             self.ui.info_tree_widget.clear()
@@ -338,7 +340,8 @@ class IndexWindow(QMainWindow):
         absolute_path = os.path.normpath(absolute_path)
         path, name = split(absolute_path)
         if name.endswith(".c") or name.endswith(".cpp") or name.endswith(".h"):
-            self.fun_val_tree(path, name)
+            # self.fun_val_tree(path, name)
+            self.tree_display(absolute_path)
         else:
             self.ui.info_tree_widget.clear()
             self.ui.show_tree_widget.clear()
@@ -901,11 +904,11 @@ class IndexWindow(QMainWindow):
         self.ui.show_tab_widget.setCurrentIndex(target_index)
 
     # 右侧树
-    def tree_display(self, funlist, vallist):
+    def tree_display(self, filename):
         self.ui.info_tree_widget.clear()
-        funlist = funlist
-        vallist = vallist
-        filename = os.path.normpath(self.c_sour_file)
+        funlist = self.funlist
+        vallist = self.vallist
+        filename = os.path.normpath(filename)
         file = QTreeWidgetItem(self.ui.info_tree_widget)
         file.setText(0, "文件名" + filename)
         fun = QTreeWidgetItem(self.ui.info_tree_widget)
@@ -958,7 +961,6 @@ class IndexWindow(QMainWindow):
             fun_val.get_fun_value()
             self.funlist = fun_val.funlist
             self.vallist = fun_val.vallist
-            self.tree_display(self.funlist, self.vallist)
 
     def compile_c(self):
         # 写自己的类的调用

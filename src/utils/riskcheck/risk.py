@@ -56,8 +56,8 @@ class RiskFind(object):
                     # 如果不目录
                     if not os.path.isdir(fi_d):
                         self.filelist.append(fi_d)
-    def invalid_find(self, fun, l):
-        le = Run_Lexer(inFile=self.inifile)
+    def invalid_find(self, fun, l, fn):
+        le = Run_Lexer(inFile=fn)
         le.runLexer()
         code = le.code
         flag = 0
@@ -73,25 +73,26 @@ class RiskFind(object):
                     flag -= 1
             if flag == 0 and first == False:
                 break
-            for v in self.vallist:
-                if v.name in line:
-                    index = line.index(v.name)
-                    if len(line) > index + 1:
-                        if line[index + 1] != "(" and v.line != "line:" + str(line[0]) and v in fun.list:
-                            self.validval.append(v)
-                    else:
-                        if v.line != "line:" + str(line[0]) and v in fun.list:
-                            self.validval.append(v)
-            for v in self.vallist:
-                if v.name in line and v not in self.validval and v.filepath == fun.filepath:
-                    if v.father == fun.name or v.father == "":
+            if os.path.normpath(fn) == os.path.normpath(self.inifile):
+                for v in self.vallist:
+                    if v.name in line:
                         index = line.index(v.name)
                         if len(line) > index + 1:
-                            if line[index + 1] != "(" and v.line != "line:" + str(line[0]):
+                            if line[index + 1] != "(" and v.line != "line:" + str(line[0]) and v in fun.list:
                                 self.validval.append(v)
                         else:
-                            if v.line != "line:" + str(line[0]):
+                            if v.line != "line:" + str(line[0]) and v in fun.list:
                                 self.validval.append(v)
+                for v in self.vallist:
+                    if v.name in line and v not in self.validval and v.filepath == fun.filepath:
+                        if v.father == fun.name or v.father == "":
+                            index = line.index(v.name)
+                            if len(line) > index + 1:
+                                if line[index + 1] != "(" and v.line != "line:" + str(line[0]):
+                                    self.validval.append(v)
+                            else:
+                                if v.line != "line:" + str(line[0]):
+                                    self.validval.append(v)
             for f in self.funlist:
                 if f.name in line and f not in self.validfun:
                     index = line.index(f.name)
@@ -99,7 +100,7 @@ class RiskFind(object):
                         self.validfun.append(f)
         if self.validfun != l:
             for f in list(set(self.validfun) - set(l)):
-                self.invalid_find(f, l)
+                self.invalid_find(f, l, fn)
 
     def leak_find(self, fun):
         le = Run_Lexer(inFile=self.inifile)
@@ -197,25 +198,28 @@ class RiskFind(object):
                         report.solve = self.fun_sol[index]
                         self.riskfunlist.append(report)
 
-        for f in self.funlist:
-            if f.name == "main":
-                self.validfun.append(f)
-            self.invalid_find(f, [])
-            if self.inifile.endswith(".c") or self.inifile.endswith(".cpp"):
-                self.leak_find(f)
+        for fn in self.filelist:
+            for f in self.funlist:
+                if f.name == "main":
+                    self.validfun.append(f)
+                self.invalid_find(f, [], fn)
+                if self.inifile.endswith(".c") or self.inifile.endswith(".cpp"):
+                    self.leak_find(f)
 
         for f in list(set(self.funlist) - set(self.validfun)):
-            inval = InvalidReport()
-            inval.fileName = f.filepath
-            inval.line = f.line
-            inval.name = f.name
-            self.invalidfun.append(inval)
+            if os.path.normpath(f.filepath) == os.path.normpath(self.inifile):
+                inval = InvalidReport()
+                inval.fileName = f.filepath
+                inval.line = f.line
+                inval.name = f.name
+                self.invalidfun.append(inval)
         for f in list(set(self.vallist) - set(self.validval)):
-            inval = InvalidReport()
-            inval.fileName = f.filepath
-            inval.line = f.line
-            inval.name = f.name
-            self.invalidval.append(inval)
+            if os.path.normpath(f.filepath) == os.path.normpath(self.inifile):
+                inval = InvalidReport()
+                inval.fileName = f.filepath
+                inval.line = f.line
+                inval.name = f.name
+                self.invalidval.append(inval)
 
 
 

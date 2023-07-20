@@ -6,6 +6,10 @@ void test()
 {
 	int flag = 100;
 }
+int sub(int a,int b)
+{
+	return a-b;
+}
 int add(int x,int y)
 {
     return x+y;
@@ -35,7 +39,7 @@ int main()
 	int a;
     int res1 = add(1,2);
     int res2 = sum(-1,10);
-    int d = ddd();
+    int d = sub(10,5);
     print();
 	printf("char: %c\n", getchar());
 	scanf("%d",&a);

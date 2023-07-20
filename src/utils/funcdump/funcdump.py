@@ -169,7 +169,6 @@ class FunctionDump:
 class DefinitionCallExpressCombiner:
     def __init__(self, file_path):
         self.file_path = file_path
-        self.headers = []
         self.main_sign = None
         self.definition_contents = []
         self.mix_contents = []
@@ -181,9 +180,25 @@ class DefinitionCallExpressCombiner:
         file_list = []
         for root, _, files in os.walk(directory):
             for file in files:
-                if file.endswith('.c') or file.endswith('.cpp') or file.endswith('.h'):
+                if file.endswith('.c') or file.endswith('.cpp'):
                     file_list.append(os.path.abspath(os.path.join(root, file)))
         return file_list
+
+    def find_all_headers(self, filepath):
+        directory, _ = os.path.split(filepath)
+        file_list = []
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.h') or file.endswith('.hh'):
+                    path = os.path.abspath(os.path.join(root, file))
+                    if self.is_defined(path):
+                        file_list.append(path)
+        return file_list
+
+    def is_defined(self, file_path):
+        with open(file_path, "r") as file:
+            content = file.read()
+            return "{" in content or "}" in content
 
     def has_main_function(self, file_path):
         with open(file_path, "r") as file:
@@ -208,6 +223,61 @@ class DefinitionCallExpressCombiner:
                     else:
                         content[-1] = last_line + '\n'
                     self.definition_contents += content
+
+    def getDefinitionCodes_(self):
+        source_files = self.find_all_files(self.file_path)
+        header_files = self.find_all_headers(self.file_path)
+        for file_path in header_files:
+            with open(file_path, "r") as file:
+                content = file.readlines()
+            last_line = content[-1]
+            pattern = r'.*\n'
+            if re.findall(pattern, last_line):
+                pass
+            else:
+                content[-1] = last_line + '\n'
+            self.definition_contents += content
+
+        for file_path in source_files:
+            with open(file_path, "r") as file:
+                content = file.readlines()
+                if self.has_main_function(file_path):
+                    if self.main_sign is None:
+                        self.main_sign = file_path
+                    else:
+                        pass
+                else:
+                    last_line = content[-1]
+                    pattern = r'.*\n'
+                    if re.findall(pattern, last_line):
+                        pass
+                    else:
+                        content[-1] = last_line + '\n'
+                    self.definition_contents += content
+
+    def Combiner_(self):
+        self.getDefinitionCodes_()
+        path, name = split(self.main_sign)
+        name = '._' + name
+        temp_path = os.path.join(path, name)
+        with open(self.main_sign, "r", encoding='utf-8') as main_file:
+            main_file_content = main_file.readlines()
+            self.main_length = len(main_file_content)
+        last_line = self.definition_contents[-1]
+        pattern = r'.*\n'
+        if re.findall(pattern, last_line):
+            pass
+        else:
+            self.definition_contents[-1] = last_line + '\n'
+
+        if main_file_content:
+            self.mix_contents = self.definition_contents + main_file_content
+
+        new_data = ["//" + line if line.startswith("#include") else line for line in self.mix_contents]
+        with open(temp_path, 'w', encoding='utf-8') as temp_obj:
+            temp_obj.writelines(new_data)
+        self.offset_length = len(new_data) - self.main_length
+        return temp_path
 
     def Combiner(self):
         self.getDefinitionCodes()
@@ -250,6 +320,7 @@ class FunctionPreprocessor:
         self.headers_list = None
         self.exclude_headers_list = None
         self.main_flag = None
+        self.header_defined = False
 
     # 产生除去头文件的临时文件XXX_.c/.cpp
     def virtualTempFile(self, filename):
@@ -281,13 +352,27 @@ class FunctionPreprocessor:
                 headers.append(dependency)
         return headers
 
+    def find_all_headers(self, filepath):
+        directory, _ = os.path.split(filepath)
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.h') or file.endswith('.hh'):
+                    path = os.path.abspath(os.path.join(root, file))
+                    if self.is_defined(path):
+                        self.header_defined = True
+
+    def is_defined(self, file_path):
+        with open(file_path, "r") as file:
+            content = file.read()
+            return "{" in content or "}" in content
+
     # 遍历所有同类型文件
     def find_all_files(self, filepath):
         directory, _ = os.path.split(filepath)
         file_list = []
         for root, _, files in os.walk(directory):
             for file in files:
-                if file.endswith('.c') or file.endswith('.cpp') or file.endswith('.h'):
+                if file.endswith('.c') or file.endswith('.cpp'):
                     absolute_path = os.path.abspath(os.path.join(root, file))
                     file_list.append(absolute_path)
                     if self.has_main_function(absolute_path):
@@ -298,32 +383,6 @@ class FunctionPreprocessor:
         with open(file_path, "r") as file:
             content = file.read()
             return "int main(" in content
-
-    # 1.2 启动项
-    def headers_runner(self, init_filename):
-        source_path = self.virtualTempFile(init_filename)
-        headers_path = self.find_dependencies(source_path)
-        path, name = split(source_path)
-
-        headers_objs = []
-        for item in headers_path:
-            header_path = path + '/' + item
-            source_path = self.virtualTempFile(header_path)
-            headers_analyzer = FunctionDump(source_path)
-            headers_analyzer.analyseLauncher()
-            # headers_analyzer.show_function_details()
-            headers_objs.append((init_filename, header_path, headers_analyzer))
-            os.remove(source_path)
-
-        return headers_objs
-
-    def exclude_headers_runner(self, init_filename):
-        source_path = self.virtualTempFile(init_filename)
-        analyzer = FunctionDump(source_path)
-        analyzer.analyseLauncher()
-        analyzer.show_function_details()
-        os.remove(source_path)
-        return analyzer
 
     def multiCallExpressCombiner(self, filepath):
         combiner = DefinitionCallExpressCombiner(filepath)
@@ -363,10 +422,49 @@ class FunctionPreprocessor:
         call_analyzer.function_callexpress_list = function_call_express_list
         return call_analyzer
 
+    def _multiCallExpressCombiner(self, filepath):
+        combiner = DefinitionCallExpressCombiner(filepath)
+        temp_filepath = combiner.Combiner_()
+        call_analyzer = FunctionDump(temp_filepath)
+        call_analyzer.analyseLauncher()
+        os.remove(temp_filepath)
+
+        offset = combiner.offset_length
+        function_declaration_list = []
+        function_definition_list = []
+        function_call_express_list = []
+        for item in call_analyzer.function_declaration_list:
+            if item.declared_location[0] > offset:
+                start_line, start_index, end_line, end_index = item.declared_location
+                item.declared_location = (start_line - offset, start_index, end_line - offset, end_index)
+                function_declaration_list.append(item)
+            else:
+                continue
+        for item in call_analyzer.function_definition_list:
+            if item.definition_location[0] > offset:
+                start_line, start_index, end_line, end_index = item.definition_location
+                item.definition_location = (start_line - offset, start_index, end_line - offset, end_index)
+                function_definition_list.append(item)
+            else:
+                continue
+        for item in call_analyzer.function_callexpress_list:
+            if item.call_express_location[0] > offset:
+                start_line, start_index, end_line, end_index = item.call_express_location
+                item.call_express_location = (start_line - offset, start_index, end_line - offset, end_index)
+                function_call_express_list.append(item)
+            else:
+                continue
+        # 覆盖原文
+        call_analyzer.function_declaration_list = function_declaration_list
+        call_analyzer.function_definition_list = function_definition_list
+        call_analyzer.function_callexpress_list = function_call_express_list
+        return call_analyzer
+
     def source_runner(self, init_filename):
         filelist = self.find_all_files(init_filename)
+        self.find_all_headers(init_filename)
         source_info_list = []
-        if len(filelist) < 2:
+        if len(filelist) < 2 and not self.header_defined:
             for file in filelist:
                 headers_objs = []
                 # 源文件
@@ -388,7 +486,7 @@ class FunctionPreprocessor:
                 # analyzer.show_function_details()
                 per_source_info = SourceInfo(filepath=file, source_obj=analyzer, headers_obj_list=headers_objs)
                 source_info_list.append(per_source_info)
-        else:
+        elif len(filelist) >= 2 and not self.header_defined:
             for file in filelist:
                 headers_objs = []
                 if file != self.main_flag:# 标记是不是main
@@ -411,10 +509,41 @@ class FunctionPreprocessor:
                 else:
                     # 是main源文件 开始复杂拼装
                     analyzer = self.multiCallExpressCombiner(file)
-
                 per_source_info = SourceInfo(filepath=file, source_obj=analyzer, headers_obj_list=headers_objs)
                 source_info_list.append(per_source_info)
 
+        elif self.header_defined:
+            for file in filelist:
+                headers_objs = []
+                if file != self.main_flag:# 标记是不是main
+                    # 源文件
+                    source_path = self.virtualTempFile(file)
+                    headers_path = self.find_dependencies(source_path)
+                    path, name = split(source_path)
+                    for header in headers_path:
+                        header_path = path + '/' + header
+                        source_path_ = self.virtualTempFile(header_path)
+                        headers_analyzer = FunctionDump(source_path_)
+                        headers_analyzer.analyseLauncher()
+                        headers_objs.append((file, header_path, headers_analyzer))
+                        os.remove(source_path_)
+                    analyzer = FunctionDump(source_path)
+                    analyzer.analyseLauncher()
+                    os.remove(source_path)
+                else:
+                    headers_path = self.find_dependencies(file)
+                    path, name = split(file)
+                    for header in headers_path:
+                        header_path = path + '/' + header
+                        source_path_ = self.virtualTempFile(header_path)
+                        headers_analyzer = FunctionDump(source_path_)
+                        headers_analyzer.analyseLauncher()
+                        headers_objs.append((file, header_path, headers_analyzer))
+                        os.remove(source_path_)
+                    # 是main源文件 开始复杂拼装
+                    analyzer = self._multiCallExpressCombiner(file)
+                per_source_info = SourceInfo(filepath=file, source_obj=analyzer, headers_obj_list=headers_objs)
+                source_info_list.append(per_source_info)
         return source_info_list
 
 # # 为了解决跳转到其他.c/.cpp文件的bug

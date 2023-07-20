@@ -499,6 +499,9 @@ class IndexWindow(QMainWindow):
         for i in self.riskfunlist:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
             riskdatas.append(data_dict)
+        for i in self.leakval:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '内存泄漏', 'remedy': i.type}
+            riskdatas.append(data_dict)
         invaliddatas = []
         for i in self.invalidfun:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
@@ -507,7 +510,7 @@ class IndexWindow(QMainWindow):
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
             invaliddatas.append(data_dict)
         if riskdatas is not None:
-            file_path = invaliddatas[0]['path']
+            file_path = riskdatas[0]['path']
         elif invaliddatas is not None:
             file_path = invaliddatas[0]['path']
         else:
@@ -559,6 +562,9 @@ class IndexWindow(QMainWindow):
         for i in self.riskfunlist:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
             riskdatas.append(data_dict)
+        for i in self.leakval:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '内存泄漏', 'remedy': i.type}
+            riskdatas.append(data_dict)
         invaliddatas = []
         for i in self.invalidfun:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
@@ -567,7 +573,7 @@ class IndexWindow(QMainWindow):
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
             invaliddatas.append(data_dict)
         if riskdatas is not None:
-            file_path = invaliddatas[0]['path']
+            file_path = riskdatas[0]['path']
         elif invaliddatas is not None:
             file_path = invaliddatas[0]['path']
         else:
@@ -612,6 +618,9 @@ class IndexWindow(QMainWindow):
         for i in self.riskfunlist:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
             riskdatas.append(data_dict)
+        for i in self.leakval:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '内存泄漏', 'remedy': i.type}
+            riskdatas.append(data_dict)
         invaliddatas = []
         for i in self.invalidfun:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
@@ -620,7 +629,7 @@ class IndexWindow(QMainWindow):
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
             invaliddatas.append(data_dict)
         if riskdatas is not None:
-            file_path = invaliddatas[0]['path']
+            file_path = riskdatas[0]['path']
         elif invaliddatas is not None:
             file_path = invaliddatas[0]['path']
         else:

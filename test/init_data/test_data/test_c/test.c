@@ -1,50 +1,38 @@
-#include "test.h"
-#include "gg.h"
 #include <stdio.h>
-int x;
-void test()
-{
-	int flag = 100;
+#include <stdlib.h>
+#include <string.h>
+#include "gg.h"
+#include "test.h"
+void invalidFunction() {
 }
-int sub(int a,int b)
-{
-	return a-b;
+void unusedVariableExample() {
+    int unusedVar;
 }
-int add(int x,int y)
-{
-    return x+y;
+void dangerousFunction(const char* input) {
+    char buffer[10];
+    strcpy(buffer, input);
 }
-int sum(int a,int b)
-{
-    int c = 0;
-    int i = a;
-    for(i=a;i<=b;i++)
-    {
-        c+=i;
-    }
-    return c;
+void memoryLeakExample() {
+    char* dynamicString = (char*)malloc(20 * sizeof(char));
 }
-void print()
+void free_()
 {
-    printf("print()\n");
+	int* pointer = (int*)malloc(sizeof(int));
+	free(pointer);
+	free(pointer);
 }
-int ddd()
-{
-    return 250;
-}
-int main()
-{
-	int u;
-    x = 1;
-	int a;
-    int res1 = add(1,2);
-    int res2 = sum(-1,10);
-    int d = sub(10,5);
-    print();
-	printf("char: %c\n", getchar());
-	scanf("%d",&a);
-	printf("a: %d\n",a);
-    printf("res1: %d\n",res1);
-    printf("res2: %d\n",res2);
+int main() {
+    unusedVariableExample();
+    char userInput[1];
+    printf("input a word please:\n");
+    scanf("%s", userInput);
+    printf("yourInput: %s\n",userInput);
+    dangerousFunction(userInput);
+    memoryLeakExample();
+	
+	int RES1 = add(200,199);
+	int RES2 = sub(200, 199);
+	int RES3 = RES1-RES2;
+	printf("add(200,199)-sub(199,200):%d\n",RES3);
     return 0;
 }

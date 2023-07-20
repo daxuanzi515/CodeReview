@@ -10,5 +10,5 @@ int main()
 	scanf("%d",&a);
 	printf("a = %d\n",a);
 	func();
-	return 0;	
+	return 0;		
 }

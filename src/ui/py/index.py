@@ -469,6 +469,9 @@ class IndexWindow(QMainWindow):
         for i in self.riskfunlist:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
             riskdatas.append(data_dict)
+        for i in self.leakval:
+            data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '内存泄漏', 'remedy': i.type}
+            riskdatas.append(data_dict)
         invaliddatas = []
         for i in self.invalidfun:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效函数'}
@@ -483,7 +486,10 @@ class IndexWindow(QMainWindow):
         logging = self.log_obj.returnString()
         self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
                                             + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
-        plt.show()
+        # plt.show()
+        url = QUrl.fromLocalFile(img_path)
+        QDesktopServices.openUrl(url)
+
 
     def generate_report(self):
         self.message = GenerateFileMessage(icon=QIcon(self.ui_icon), text='选择导出文件类型以及是否加密')

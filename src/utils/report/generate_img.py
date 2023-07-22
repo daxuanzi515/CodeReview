@@ -35,6 +35,7 @@ class PieChartGenerator:
         nowtime_ = time.strftime("%Y_%m_%d_%H_%M_%S", nowtime)
         img_path = self.config_ini['main_project']['project_name'] + self.config_ini['report']['img_path'].format(nowtime_, 'image')  # 指定保存路径和文件名
         plt.savefig(img_path)  # 保存饼状图为图像文件
+        plt.clf()
         return img_path
 
 

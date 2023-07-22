@@ -1,6 +1,5 @@
 import time
 
-
 class Log:
     def inputValue(self, user_id, operator, level):
         self.timestamp = None

@@ -250,7 +250,8 @@ class IndexWindow(QMainWindow):
                 self.ui.text_editor.addTab(text_editor_obj, text_editor_obj.filename)
                 self.ui.text_editor.setCurrentWidget(text_editor_obj)
                 # 一些逻辑
-                self.source_data = self.getFuncAnalyzer(editor=text_editor_obj)
+                if text_editor_obj.getText():
+                    self.source_data = self.getFuncAnalyzer(editor=text_editor_obj)
                 text_editor_obj.gotoDeclarationSign.connect(lambda : self.gotoDeclaration(text_editor_obj))
                 text_editor_obj.gotoDefinitionSign.connect(lambda : self.gotoDefinition(text_editor_obj))
                 text_editor_obj.gotoCallExpressSign.connect(lambda : self.gotoCallExpress(text_editor_obj))
@@ -313,7 +314,8 @@ class IndexWindow(QMainWindow):
             if current_tab.getStatus():
                 current_tab.changeStatus(False)
                 # 展示右侧树状列表
-            self.source_data = self.getFuncAnalyzer(editor=current_tab)
+            if current_tab.getText():
+                self.source_data = self.getFuncAnalyzer(editor=current_tab)
         if name.endswith(".c") or name.endswith(".cpp") or name.endswith(".h"):
             self.fun_val_tree(path, name)
             self.tree_display(absolute_path)
@@ -1168,7 +1170,8 @@ class IndexWindow(QMainWindow):
     def change_tab(self):
         current_tab = self.ui.text_editor.currentWidget()
         if current_tab:
-            self.source_data = self.getFuncAnalyzer(editor=current_tab)
+            if current_tab.getText():
+                self.source_data = self.getFuncAnalyzer(editor=current_tab)
             absolute_path = current_tab.filepath + '/' + current_tab.filename
             absolute_path = os.path.normpath(absolute_path)
             if current_tab.filename.endswith(".c") or current_tab.filename.endswith(".cpp") or current_tab.filename.endswith(".h"):

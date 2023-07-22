@@ -216,12 +216,13 @@ class DefinitionCallExpressCombiner:
                     else:
                         pass
                 else:
-                    last_line = content[-1]
-                    pattern = r'.*\n'
-                    if re.findall(pattern, last_line):
-                        pass
-                    else:
-                        content[-1] = last_line + '\n'
+                    if content:
+                        last_line = content[-1]
+                        pattern = r'.*\n'
+                        if re.findall(pattern, last_line):
+                            pass
+                        else:
+                            content[-1] = last_line + '\n'
                     self.definition_contents += content
 
     def getDefinitionCodes_(self):
@@ -230,12 +231,13 @@ class DefinitionCallExpressCombiner:
         for file_path in header_files:
             with open(file_path, "r") as file:
                 content = file.readlines()
-            last_line = content[-1]
-            pattern = r'.*\n'
-            if re.findall(pattern, last_line):
-                pass
-            else:
-                content[-1] = last_line + '\n'
+            if content:
+                last_line = content[-1]
+                pattern = r'.*\n'
+                if re.findall(pattern, last_line):
+                    pass
+                else:
+                    content[-1] = last_line + '\n'
             self.definition_contents += content
 
         for file_path in source_files:
@@ -247,12 +249,13 @@ class DefinitionCallExpressCombiner:
                     else:
                         pass
                 else:
-                    last_line = content[-1]
-                    pattern = r'.*\n'
-                    if re.findall(pattern, last_line):
-                        pass
-                    else:
-                        content[-1] = last_line + '\n'
+                    if content:
+                        last_line = content[-1]
+                        pattern = r'.*\n'
+                        if re.findall(pattern, last_line):
+                            pass
+                        else:
+                            content[-1] = last_line + '\n'
                     self.definition_contents += content
 
     def Combiner_(self):

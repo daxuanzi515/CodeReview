@@ -29,7 +29,6 @@ int main() {
     printf("yourInput: %s\n",userInput);
     dangerousFunction(userInput);
     memoryLeakExample();
-	
 	int RES1 = add(200,199);
 	int RES2 = sub(200, 199);
 	int RES3 = RES1-RES2;

@@ -81,7 +81,7 @@ class SearchReplaceWindow(QDialog):
                     self.ui.re_s.isChecked(),  # regexp
                     self.ui.cs_s.isChecked(),  # cs
                     self.ui.wo_s.isChecked(),  # wo
-                    True,  # 回到开始？
+                    False,  # 回到开始？
                     forward,  # 向前向后？
                     -1,  # 行
                     -1,  # 下标
@@ -118,7 +118,7 @@ class SearchReplaceWindow(QDialog):
                     self.ui.re_s.isChecked(),  # regexp
                     self.ui.cs_s.isChecked(),  # cs
                     self.ui.wo_s.isChecked(),  # wo
-                    True,  # 回到开始？
+                    False,  # 回到开始？
                     forward,  # 向前向后？
                     -1,  # 行
                     -1,  # 下标

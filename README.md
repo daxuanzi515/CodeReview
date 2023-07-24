@@ -416,43 +416,43 @@ class DefinitionCallExpressCombiner:
 ```
 调用这个函数计算真正的`main`函数声明、定义、调用函数的位置坐标，覆盖临时文件的数据，返回数据
 ```python
-    def multiCallExpressCombiner(self, filepath):
-        combiner = DefinitionCallExpressCombiner(filepath)
-        temp_filepath = combiner.Combiner()
-        call_analyzer = FunctionDump(temp_filepath)
-        call_analyzer.analyseLauncher()
-        os.remove(temp_filepath)
+def multiCallExpressCombiner(self, filepath):
+    combiner = DefinitionCallExpressCombiner(filepath)
+    temp_filepath = combiner.Combiner()
+    call_analyzer = FunctionDump(temp_filepath)
+    call_analyzer.analyseLauncher()
+    os.remove(temp_filepath)
 
-        offset = combiner.offset_length
-        function_declaration_list = []
-        function_definition_list = []
-        function_call_express_list = []
-        for item in call_analyzer.function_declaration_list:
-            if item.declared_location[0] > offset:
-                start_line, start_index, end_line, end_index = item.declared_location
-                item.declared_location = (start_line - offset, start_index, end_line - offset, end_index)
-                function_declaration_list.append(item)
-            else:
-                continue
-        for item in call_analyzer.function_definition_list:
-            if item.definition_location[0] > offset:
-                start_line, start_index, end_line, end_index = item.definition_location
-                item.definition_location = (start_line - offset, start_index, end_line - offset, end_index)
-                function_definition_list.append(item)
-            else:
-                continue
-        for item in call_analyzer.function_callexpress_list:
-            if item.call_express_location[0] > offset:
-                start_line, start_index, end_line, end_index = item.call_express_location
-                item.call_express_location = (start_line - offset, start_index, end_line - offset, end_index)
-                function_call_express_list.append(item)
-            else:
-                continue
-        # 覆盖原文
-        call_analyzer.function_declaration_list = function_declaration_list
-        call_analyzer.function_definition_list = function_definition_list
-        call_analyzer.function_callexpress_list = function_call_express_list
-        return call_analyzer
+    offset = combiner.offset_length
+    function_declaration_list = []
+    function_definition_list = []
+    function_call_express_list = []
+    for item in call_analyzer.function_declaration_list:
+        if item.declared_location[0] > offset:
+            start_line, start_index, end_line, end_index = item.declared_location
+            item.declared_location = (start_line - offset, start_index, end_line - offset, end_index)
+            function_declaration_list.append(item)
+        else:
+            continue
+    for item in call_analyzer.function_definition_list:
+        if item.definition_location[0] > offset:
+            start_line, start_index, end_line, end_index = item.definition_location
+            item.definition_location = (start_line - offset, start_index, end_line - offset, end_index)
+            function_definition_list.append(item)
+        else:
+            continue
+    for item in call_analyzer.function_callexpress_list:
+        if item.call_express_location[0] > offset:
+            start_line, start_index, end_line, end_index = item.call_express_location
+            item.call_express_location = (start_line - offset, start_index, end_line - offset, end_index)
+            function_call_express_list.append(item)
+        else:
+            continue
+    # 覆盖原文
+    call_analyzer.function_declaration_list = function_declaration_list
+    call_analyzer.function_definition_list = function_definition_list
+    call_analyzer.function_callexpress_list = function_call_express_list
+    return call_analyzer
 ```
 ## 下载文件
 

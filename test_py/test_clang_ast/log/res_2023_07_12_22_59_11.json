@@ -1,0 +1,357 @@
+{
+    "kind": "CursorKind.TRANSLATION_UNIT",
+    "location": [
+        1,
+        1,
+        11,
+        2
+    ],
+    "children": [
+        {
+            "kind": "CursorKind.FUNCTION_DECL",
+            "location": [
+                2,
+                1,
+                5,
+                2
+            ],
+            "children": [
+                {
+                    "kind": "CursorKind.PARM_DECL",
+                    "location": [
+                        2,
+                        9,
+                        2,
+                        14
+                    ],
+                    "children": [],
+                    "spelling": "a",
+                    "contents": "int a,"
+                },
+                {
+                    "kind": "CursorKind.PARM_DECL",
+                    "location": [
+                        2,
+                        15,
+                        2,
+                        20
+                    ],
+                    "children": [],
+                    "spelling": "b",
+                    "contents": "int b)"
+                },
+                {
+                    "kind": "CursorKind.COMPOUND_STMT",
+                    "location": [
+                        3,
+                        1,
+                        5,
+                        2
+                    ],
+                    "children": [
+                        {
+                            "kind": "CursorKind.RETURN_STMT",
+                            "location": [
+                                4,
+                                5,
+                                4,
+                                15
+                            ],
+                            "children": [
+                                {
+                                    "kind": "CursorKind.BINARY_OPERATOR",
+                                    "location": [
+                                        4,
+                                        12,
+                                        4,
+                                        15
+                                    ],
+                                    "children": [
+                                        {
+                                            "kind": "CursorKind.UNEXPOSED_EXPR",
+                                            "location": [
+                                                4,
+                                                12,
+                                                4,
+                                                13
+                                            ],
+                                            "children": [
+                                                {
+                                                    "kind": "CursorKind.DECL_REF_EXPR",
+                                                    "location": [
+                                                        4,
+                                                        12,
+                                                        4,
+                                                        13
+                                                    ],
+                                                    "children": [],
+                                                    "spelling": "a",
+                                                    "contents": "a+"
+                                                }
+                                            ],
+                                            "spelling": "a",
+                                            "contents": "a+"
+                                        },
+                                        {
+                                            "kind": "CursorKind.UNEXPOSED_EXPR",
+                                            "location": [
+                                                4,
+                                                14,
+                                                4,
+                                                15
+                                            ],
+                                            "children": [
+                                                {
+                                                    "kind": "CursorKind.DECL_REF_EXPR",
+                                                    "location": [
+                                                        4,
+                                                        14,
+                                                        4,
+                                                        15
+                                                    ],
+                                                    "children": [],
+                                                    "spelling": "b",
+                                                    "contents": "b;"
+                                                }
+                                            ],
+                                            "spelling": "b",
+                                            "contents": "b;"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "spelling": "add",
+            "contents": "int add(int a,int b)\n{\n    return a+b;\n}\n"
+        },
+        {
+            "kind": "CursorKind.FUNCTION_DECL",
+            "location": [
+                6,
+                1,
+                11,
+                2
+            ],
+            "children": [
+                {
+                    "kind": "CursorKind.COMPOUND_STMT",
+                    "location": [
+                        7,
+                        1,
+                        11,
+                        2
+                    ],
+                    "children": [
+                        {
+                            "kind": "CursorKind.DECL_STMT",
+                            "location": [
+                                8,
+                                5,
+                                8,
+                                24
+                            ],
+                            "children": [
+                                {
+                                    "kind": "CursorKind.VAR_DECL",
+                                    "location": [
+                                        8,
+                                        5,
+                                        8,
+                                        23
+                                    ],
+                                    "children": [
+                                        {
+                                            "kind": "CursorKind.CALL_EXPR",
+                                            "location": [
+                                                8,
+                                                15,
+                                                8,
+                                                23
+                                            ],
+                                            "children": [
+                                                {
+                                                    "kind": "CursorKind.UNEXPOSED_EXPR",
+                                                    "location": [
+                                                        8,
+                                                        15,
+                                                        8,
+                                                        18
+                                                    ],
+                                                    "children": [
+                                                        {
+                                                            "kind": "CursorKind.DECL_REF_EXPR",
+                                                            "location": [
+                                                                8,
+                                                                15,
+                                                                8,
+                                                                18
+                                                            ],
+                                                            "children": [],
+                                                            "spelling": "add",
+                                                            "contents": "add("
+                                                        }
+                                                    ],
+                                                    "spelling": "add",
+                                                    "contents": "add("
+                                                },
+                                                {
+                                                    "kind": "CursorKind.INTEGER_LITERAL",
+                                                    "location": [
+                                                        8,
+                                                        19,
+                                                        8,
+                                                        20
+                                                    ],
+                                                    "children": []
+                                                },
+                                                {
+                                                    "kind": "CursorKind.INTEGER_LITERAL",
+                                                    "location": [
+                                                        8,
+                                                        21,
+                                                        8,
+                                                        22
+                                                    ],
+                                                    "children": []
+                                                }
+                                            ],
+                                            "spelling": "add",
+                                            "contents": "add(1,2);"
+                                        }
+                                    ],
+                                    "spelling": "res",
+                                    "contents": "int res = add(1,2);"
+                                }
+                            ]
+                        },
+                        {
+                            "kind": "CursorKind.CALL_EXPR",
+                            "location": [
+                                9,
+                                5,
+                                9,
+                                29
+                            ],
+                            "children": [
+                                {
+                                    "kind": "CursorKind.UNEXPOSED_EXPR",
+                                    "location": [
+                                        9,
+                                        5,
+                                        9,
+                                        11
+                                    ],
+                                    "children": [
+                                        {
+                                            "kind": "CursorKind.DECL_REF_EXPR",
+                                            "location": [
+                                                9,
+                                                5,
+                                                9,
+                                                11
+                                            ],
+                                            "children": [],
+                                            "spelling": "printf",
+                                            "contents": "printf("
+                                        }
+                                    ],
+                                    "spelling": "printf",
+                                    "contents": "printf("
+                                },
+                                {
+                                    "kind": "CursorKind.UNEXPOSED_EXPR",
+                                    "location": [
+                                        9,
+                                        12,
+                                        9,
+                                        23
+                                    ],
+                                    "children": [
+                                        {
+                                            "kind": "CursorKind.UNEXPOSED_EXPR",
+                                            "location": [
+                                                9,
+                                                12,
+                                                9,
+                                                23
+                                            ],
+                                            "children": [
+                                                {
+                                                    "kind": "CursorKind.STRING_LITERAL",
+                                                    "location": [
+                                                        9,
+                                                        12,
+                                                        9,
+                                                        23
+                                                    ],
+                                                    "children": [],
+                                                    "spelling": "\"res: %d\\n\"",
+                                                    "contents": "\"res: %d\\n\","
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "kind": "CursorKind.UNEXPOSED_EXPR",
+                                    "location": [
+                                        9,
+                                        25,
+                                        9,
+                                        28
+                                    ],
+                                    "children": [
+                                        {
+                                            "kind": "CursorKind.DECL_REF_EXPR",
+                                            "location": [
+                                                9,
+                                                25,
+                                                9,
+                                                28
+                                            ],
+                                            "children": [],
+                                            "spelling": "res",
+                                            "contents": "res)"
+                                        }
+                                    ],
+                                    "spelling": "res",
+                                    "contents": "res)"
+                                }
+                            ],
+                            "spelling": "printf",
+                            "contents": "printf(\"res: %d\\n\", res);"
+                        },
+                        {
+                            "kind": "CursorKind.RETURN_STMT",
+                            "location": [
+                                10,
+                                5,
+                                10,
+                                13
+                            ],
+                            "children": [
+                                {
+                                    "kind": "CursorKind.INTEGER_LITERAL",
+                                    "location": [
+                                        10,
+                                        12,
+                                        10,
+                                        13
+                                    ],
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "spelling": "main",
+            "contents": "int main()\n{\n    int res = add(1,2);\n    printf(\"res: %d\\n\", res);\n    return 0;\n}"
+        }
+    ],
+    "spelling": "test_headers.c",
+    "contents": "//#include \"test.h\"\nint add(int a,int b)\n{\n    return a+b;\n}\nint main()\n{\n    int res = add(1,2);\n    printf(\"res: %d\\n\", res);\n    return 0;\n}"
+}

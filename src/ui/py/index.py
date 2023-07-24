@@ -51,6 +51,9 @@ class IndexWindow(QMainWindow):
 
         self.ui_close = self.config_ini["main_project"]["project_name"] + self.config_ini["ui_img"]["ui_-"]
         self.ui_open = self.config_ini["main_project"]["project_name"] + self.config_ini["ui_img"]["ui_+"]
+        self.log_path = self.config_ini["main_project"]["project_name"] + self.config_ini["log"]["init_log_file"]
+        self.encry_log_path = self.config_ini["main_project"]["project_name"] + self.config_ini["log"]["encry_log_file"]
+        self.decry_log_path = self.config_ini["main_project"]["project_name"] + self.config_ini["log"]["decry_log_file"]
 
         self.setWindowIcon(QIcon(self.ui_icon))
         self.pixmap = QPixmap(self.ui_pointer)
@@ -486,9 +489,7 @@ class IndexWindow(QMainWindow):
 
         self.log_obj.inputValue(self.user_id, f"使用生成图片功能，生成图片{img_path}", '操作安全')
         logging = self.log_obj.returnString()
-        self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                            + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
-        # plt.show()
+        self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
         url = QUrl.fromLocalFile(img_path)
         QDesktopServices.openUrl(url)
 
@@ -530,13 +531,11 @@ class IndexWindow(QMainWindow):
             if self.checked:
                 docx_path1 = aes.AES_encry_docx(encryptor)
                 self.files_list.append({'user_id':self.user_id, 'report_type': 'word', 'report_path': f'{docx_path1}',
-                                        'log_path': (self.config_ini['main_project']['project_name']
-                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log')})
+                                        'log_path': self.log_path.format(self.user_id, 'Log')})
 
                 self.log_obj.inputValue(self.user_id, f"使用导出报告功能，导出 [word] 报告 {docx_path1}", '操作安全')
                 logging = self.log_obj.returnString()
-                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+                self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
                 path, name = split(self.docx_path)
                 message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
                 message.exec_()
@@ -596,13 +595,11 @@ class IndexWindow(QMainWindow):
                 pdf_path1 = aes.AES_encry_pdf(encryptor)
 
                 self.files_list.append({'user_id':self.user_id, 'report_type': 'pdf', 'report_path': f'{pdf_path1}',
-                                        'log_path': (self.config_ini['main_project']['project_name']
-                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log')})
+                                        'log_path': self.log_path.format(self.user_id, 'Log')})
 
                 self.log_obj.inputValue(self.user_id, f"使用导出报告功能，导出 [pdf] 报告 {pdf_path1}", '操作安全')
                 logging = self.log_obj.returnString()
-                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+                self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
 
                 path, name = split(self.pdf_path)
                 message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
@@ -650,13 +647,11 @@ class IndexWindow(QMainWindow):
                 md_path1 = aes.AES_encry_md(encryptor)
 
                 self.files_list.append({'user_id':self.user_id, 'report_type': 'markdown', 'report_path': f'{md_path1}',
-                                        'log_path': (self.config_ini['main_project']['project_name']
-                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log')})
+                                        'log_path': self.log_path.format(self.user_id, 'Log')})
 
                 self.log_obj.inputValue(self.user_id, f"使用导出报告功能，导出 [markdown] 报告 {md_path1}", '操作安全')
                 logging = self.log_obj.returnString()
-                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+                self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
 
                 path, name = split(self.md_path)
                 message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text=f'{name},文件导出成功!')
@@ -1188,13 +1183,20 @@ class IndexWindow(QMainWindow):
     def check_log(self):
         message_box = OpenFileMessage(icon=QIcon(self.ui_icon),text='是否打开用户操作日志？')
         message_box.openn.connect(self.log_open)
-        message_box.later.connect(self.laterview)
+        message_box.later.connect(self.log_undo)
         message_box.exec_()
 
     def log_open(self):
-        path = (self.config_ini['main_project']['project_name']+ self.config_ini['log']['log_file']).format(self.user_id, 'Log')
+        self.log_obj.inputValue(user_id=self.user_id,operator=None,level=None)
+        self.encry_log_path = self.encry_log_path.format(self.user_id, 'Log')
+        self.decry_log_path = self.decry_log_path.format(self.user_id, 'Log')
+        self.log_obj.decry_log(path=self.encry_log_path,path_=self.decry_log_path,config_ini=self.config_ini)
+        path = self.decry_log_path
         url = QUrl.fromLocalFile(path)
         QDesktopServices.openUrl(url)
+
+    def log_undo(self):
+        pass
 
     # override
     def enterEvent(self, event):
@@ -1217,6 +1219,12 @@ class IndexWindow(QMainWindow):
         self.ui.backto.setStyleSheet(
             f"QPushButton {{ border-image: url({self.ui_back_to});background-color: transparent; }}")
 
+    def closeEvent(self, event):
+        self.log_obj.inputValue(user_id=self.user_id,operator=None,level=None)
+        self.log_path = self.log_path.format(self.user_id,'Log')
+        self.encry_log_path = self.encry_log_path.format(self.user_id,'Log')
+        self.log_obj.encry_log(path=self.log_path,path_=self.encry_log_path,config_ini=self.config_ini)
+
     def create_nested_folders(self):
         import os
         # 绝对路径
@@ -1229,7 +1237,9 @@ class IndexWindow(QMainWindow):
             'data/reports/img',
             'data/reports/docx',
             'data/rules',
-            'data/logs',
+            'data/logs/encry',
+            'data/logs/decry',
+            'data/logs/decry/init_log',
             'data/tags'
         ]
         for folder in nested_folders:

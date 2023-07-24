@@ -37,6 +37,7 @@ class Terminal(QMainWindow):
         self.log_obj = Log()
 
         self.config_ini = parent.config_ini
+        self.log_path = self.config_ini["main_project"]["project_name"] + self.config_ini["log"]["init_log_file"]
         self.user_id = None
 
     def addData(self, text):
@@ -127,9 +128,7 @@ class Terminal(QMainWindow):
         logging1 = self.log_obj.returnString()
         self.log_obj.inputValue(self.user_id, f'使用终端获取回显内容: {output}', '操作安全')
         logging2 = self.log_obj.returnString()
-        self.log_obj.generate_log(logging1 + logging2, (self.config_ini['main_project']['project_name']
-                                                        + self.config_ini['log']['log_file']).format(self.user_id,
-                                                                                                     'Log'))
+        self.log_obj.generate_log(logging1 + logging2, self.log_path.format(self.user_id, 'Log'))
         if output != "":
             content = header1 + msg1 + header2 + output
         else:

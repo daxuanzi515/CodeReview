@@ -31,6 +31,7 @@ class RegisterWindow(QWidget):
         ui_register_page = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_register_view']
         self.ui_back_to = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_back_to']
         self.ui_back_to_ = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_back_to_']
+        self.log_path = self.config_ini["main_project"]["project_name"] + self.config_ini["log"]["init_log_file"]
 
         self.setWindowIcon(QIcon(self.ui_icon))
         self.pixmap = QPixmap(ui_pointer)
@@ -187,8 +188,7 @@ class RegisterWindow(QWidget):
                 self.show_success_message()
                 self.log_obj.inputValue(self.user_id, '注册成功', '操作安全')
                 logging = self.log_obj.returnString()
-                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+                self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
                 # 发生成功注册信号
                 self.register_success.emit()
             else:

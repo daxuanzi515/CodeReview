@@ -24,6 +24,7 @@ class LoginWindow(QWidget):
         self.ui_icon = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_icon']
         ui_pointer = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_pointer']
         ui_welcome_page = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_login_view']
+        self.log_path = self.config_ini["main_project"]["project_name"] + self.config_ini["log"]["init_log_file"]
 
         self.setWindowIcon(QIcon(self.ui_icon))
         self.pixmap = QPixmap(ui_pointer)
@@ -126,8 +127,7 @@ class LoginWindow(QWidget):
                 self.show_success_message()
                 self.log_obj.inputValue(self.user_id, '登录系统成功', '操作安全')
                 logging = self.log_obj.returnString()
-                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+                self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
                 self.ui.username.clear()
                 self.ui.password.clear()
                 # 成功之后跳转到主界面IndexWindow 发射登录成功信号
@@ -225,7 +225,9 @@ class LoginWindow(QWidget):
             'data/reports/img',
             'data/reports/docx',
             'data/rules',
-            'data/logs',
+            'data/logs/encry',
+            'data/logs/decry',
+            'data/logs/decry/init_log',
             'data/tags'
         ]
         for folder in nested_folders:

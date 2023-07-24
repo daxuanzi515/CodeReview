@@ -29,6 +29,7 @@ class SearchReplaceWindow(QDialog):
         self.ui_behind = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_behind']
         self.ui_forward_ = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_forward_']
         self.ui_behind_ = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_behind_']
+        self.log_path = self.config_ini["main_project"]["project_name"] + self.config_ini["log"]["init_log_file"]
 
         self.pixmap = QPixmap(self.ui_pointer)
         self.smaller_pixmap = self.pixmap.scaled(24, 24)  # 将图像调整为24*24的尺寸
@@ -100,8 +101,7 @@ class SearchReplaceWindow(QDialog):
 
                     self.log_obj.inputValue(self.user_id, f'使用单个替换功能，替换{init_word}为{replace_word}', '操作安全')
                     logging = self.log_obj.returnString()
-                    self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                        + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+                    self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
 
     def replace_all_string(self):
         self.replace_pos.clear()
@@ -140,8 +140,7 @@ class SearchReplaceWindow(QDialog):
 
                 self.log_obj.inputValue(self.user_id, f'使用全部替换功能替换{init_word}为{replace_word}', '操作安全')
                 logging = self.log_obj.returnString()
-                self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                    + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+                self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
 
     def choice_bridge_s(self):
         if self.ui.All_s.isChecked():
@@ -204,8 +203,7 @@ class SearchReplaceWindow(QDialog):
             self.ui.msg1.setText(f"共搜索到关键词: '{input_string}'  {count}次！")
             self.log_obj.inputValue(self.user_id, f"使用全部查找功能，查找关键词 '{input_string}' {count}次", '操作安全')
             logging = self.log_obj.returnString()
-            self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+            self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
 
     def search_select_string(self):
         # 点击之前先清空一切阻碍
@@ -278,8 +276,7 @@ class SearchReplaceWindow(QDialog):
             self.ui.msg1.setText(f"共搜索到关键词: '{input_string}'  {count}次！")
             self.log_obj.inputValue(self.user_id, f"使用选中功能，查找关键词 '{input_string}' {count}次", '操作安全')
             logging = self.log_obj.returnString()
-            self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+            self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
 
     # 查找的追溯
     # 向下追溯

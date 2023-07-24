@@ -23,6 +23,7 @@ class DangerManagerWindow(QDialog):
         # 装饰
         self.ui_icon = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_icon']
         self.ui_pointer = self.config_ini['main_project']['project_name'] + self.config_ini['ui_img']['ui_pointer']
+        self.log_path = self.config_ini["main_project"]["project_name"] + self.config_ini["log"]["init_log_file"]
 
         self.pixmap = QPixmap(self.ui_pointer)
         self.smaller_pixmap = self.pixmap.scaled(24, 24)  # 将图像调整为24*24的尺寸
@@ -85,8 +86,7 @@ class DangerManagerWindow(QDialog):
             self.sql_obj.close_db()
             self.log_obj.inputValue(self.user_id, f'向风险函数数据库删除了一条数据:{msg}', '操作有风险')
             logging = self.log_obj.returnString()
-            self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+            self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
 
             message = CustomMessageBox(icon=QIcon(self.ui_icon), title='提示', text='删除完成！')
             message.exec_()
@@ -117,8 +117,7 @@ class DangerManagerWindow(QDialog):
                 self.ui.database.setItem(0, i, per_item)
             self.log_obj.inputValue(self.user_id, f'向风险函数显示表插入了一条数据:{name, level, solution}', '操作安全')
             logging = self.log_obj.returnString()
-            self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                                + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+            self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
 
     def beforeScanner(self):
         message_box = CheckMessage(icon=QIcon(self.ui_icon), text='您添加的规则将被写入数据库并作为下一次审计的附加规则，是否导入规则？')
@@ -174,8 +173,7 @@ class DangerManagerWindow(QDialog):
 
         self.log_obj.inputValue(self.user_id, '向风险函数数据库里导入了自定义规则', '操作风险')
         logging = self.log_obj.returnString()
-        self.log_obj.generate_log(logging, (self.config_ini['main_project']['project_name']
-                                            + self.config_ini['log']['log_file']).format(self.user_id, 'Log'))
+        self.log_obj.generate_log(logging, self.log_path.format(self.user_id, 'Log'))
         # 发射信号
         self.set_scanner_rule.emit()
 

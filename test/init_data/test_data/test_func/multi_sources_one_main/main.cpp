@@ -8,5 +8,7 @@ int main()
     printf("res2: %d\n",res2);
     int res3 = res1 + res2;
     func(res3);
+	int res4 = sum(-1,10);
+    func(res4);
 	return 0;
 }

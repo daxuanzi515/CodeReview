@@ -30,7 +30,11 @@ class Generate2Word:
         # 生成报告
         tpl = DocxTemplate(self.tpl_file)
         result3 = self.DP()
-        self.code_type = self.file_path.split('.')[-1]
+        if self.file_path:
+            self.code_type = self.file_path.split('.')[-1]
+        else:
+            self.code_type = ""
+
         self.insert_image1 = InlineImage(tpl, result3, width=Mm(140))
         len1 = len(self.riskdatas)
         len2 = len(self.invalid)

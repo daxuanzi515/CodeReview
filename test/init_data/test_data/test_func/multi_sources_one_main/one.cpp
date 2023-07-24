@@ -13,3 +13,7 @@ int sum(int a,int b)
 	}
 	return c;
 }
+void print()
+{
+	printf("This is a test function!\n");
+}

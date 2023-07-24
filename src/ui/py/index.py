@@ -504,6 +504,9 @@ class IndexWindow(QMainWindow):
         intodata.insert()
     def docx_file(self):
         self.checked = self.message.checked
+        current_tab = self.ui.text_editor.currentWidget()
+        init_file_path = current_tab.filepath + '/' + current_tab.filename
+        init_file_path = os.path.normpath(init_file_path)
         riskdatas = []
         for i in self.riskfunlist:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
@@ -518,12 +521,12 @@ class IndexWindow(QMainWindow):
         for i in self.invalidval:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
             invaliddatas.append(data_dict)
-        if riskdatas is not None:
+        if riskdatas:
             file_path = riskdatas[0]['path']
-        elif invaliddatas is not None:
+        elif invaliddatas:
             file_path = invaliddatas[0]['path']
         else:
-            file_path = None
+            file_path = init_file_path
         rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
         self.docx_path = rep.generate_report()
         aes, encryptor, decryptor = self.initial()
@@ -566,6 +569,9 @@ class IndexWindow(QMainWindow):
     def pdf_file(self):
         self.checked = self.message.checked
         riskdatas = []
+        current_tab = self.ui.text_editor.currentWidget()
+        init_file_path = current_tab.filepath + '/' + current_tab.filename
+        init_file_path = os.path.normpath(init_file_path)
         for i in self.riskfunlist:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
             riskdatas.append(data_dict)
@@ -579,12 +585,12 @@ class IndexWindow(QMainWindow):
         for i in self.invalidval:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
             invaliddatas.append(data_dict)
-        if riskdatas is not None:
+        if riskdatas:
             file_path = riskdatas[0]['path']
-        elif invaliddatas is not None:
+        elif invaliddatas:
             file_path = invaliddatas[0]['path']
         else:
-            file_path = None
+            file_path = init_file_path
         rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
         docx_path = rep.generate_report()
         self.pdf_path = rep.convert_to_pdf(docx_path)
@@ -620,6 +626,9 @@ class IndexWindow(QMainWindow):
     def md_file(self):
         self.checked = self.message.checked
         riskdatas = []
+        current_tab = self.ui.text_editor.currentWidget()
+        init_file_path = current_tab.filepath + '/' + current_tab.filename
+        init_file_path = os.path.normpath(init_file_path)
         for i in self.riskfunlist:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.riskName, 'rank': i.riskLev, 'remedy': i.solve}
             riskdatas.append(data_dict)
@@ -633,12 +642,12 @@ class IndexWindow(QMainWindow):
         for i in self.invalidval:
             data_dict = {'path': i.fileName, 'lines': i.line, 'func': i.name, 'rank': '无效变量'}
             invaliddatas.append(data_dict)
-        if riskdatas is not None:
+        if riskdatas:
             file_path = riskdatas[0]['path']
-        elif invaliddatas is not None:
+        elif invaliddatas:
             file_path = invaliddatas[0]['path']
         else:
-            file_path = None
+            file_path = init_file_path
         rep = Convert(self.template_file, self.config_ini, riskdatas, invaliddatas, file_path, self.md_template_file)
         self.md_path = rep.convert_to_md()
         aes, encryptor, decryptor = self.initial()
@@ -1187,13 +1196,19 @@ class IndexWindow(QMainWindow):
         message_box.exec_()
 
     def log_open(self):
-        self.log_obj.inputValue(user_id=self.user_id,operator=None,level=None)
         self.encry_log_path = self.encry_log_path.format(self.user_id, 'Log')
         self.decry_log_path = self.decry_log_path.format(self.user_id, 'Log')
-        self.log_obj.decry_log(path=self.encry_log_path,path_=self.decry_log_path,config_ini=self.config_ini)
+        self.log_path = self.log_path.format(self.user_id, 'Log')
         path = self.decry_log_path
-        url = QUrl.fromLocalFile(path)
-        QDesktopServices.openUrl(url)
+        if os.path.exists(self.encry_log_path):
+            self.log_obj.inputValue(user_id=self.user_id, operator=None, level=None)
+            self.log_obj.decry_log(path=self.encry_log_path, path_=self.decry_log_path, config_ini=self.config_ini)
+            url = QUrl.fromLocalFile(path)
+            QDesktopServices.openUrl(url)
+        else:
+            path = self.log_path
+            url = QUrl.fromLocalFile(path)
+            QDesktopServices.openUrl(url)
 
     def log_undo(self):
         pass
@@ -1220,10 +1235,15 @@ class IndexWindow(QMainWindow):
             f"QPushButton {{ border-image: url({self.ui_back_to});background-color: transparent; }}")
 
     def closeEvent(self, event):
-        self.log_obj.inputValue(user_id=self.user_id,operator=None,level=None)
-        self.log_path = self.log_path.format(self.user_id,'Log')
-        self.encry_log_path = self.encry_log_path.format(self.user_id,'Log')
-        self.log_obj.encry_log(path=self.log_path,path_=self.encry_log_path,config_ini=self.config_ini)
+        if self.user_id:
+            self.log_obj.inputValue(user_id=self.user_id,operator=None,level=None)
+            self.log_path = self.log_path.format(self.user_id,'Log')
+            self.encry_log_path = self.encry_log_path.format(self.user_id,'Log')
+            self.decry_log_path = self.decry_log_path.format(self.user_id,'Log')
+            self.log_obj.encry_log(path=self.log_path,path_=self.encry_log_path,config_ini=self.config_ini)
+            if os.path.exists(self.decry_log_path):
+                os.remove(self.decry_log_path)
+
 
     def create_nested_folders(self):
         import os

@@ -47,13 +47,13 @@ class Log:
         self.aes_obj.encrypt_file(key=key, path=path_, data=data)
 
     def decry_log(self, path, path_, config_ini):
-        decry_folder_path, _ = split(path_)
-        if not os.path.exists(decry_folder_path):
-            return
-        for file_name in os.listdir(decry_folder_path):
-            file_path = os.path.join(decry_folder_path, file_name)
-            if os.path.isfile(file_path):
-                os.remove(file_path)
+        # decry_folder_path, _ = split(path_)
+        # if not os.path.exists(decry_folder_path):
+        #     return
+        # for file_name in os.listdir(decry_folder_path):
+        #     file_path = os.path.join(decry_folder_path, file_name)
+        #     if os.path.isfile(file_path):
+        #         os.remove(file_path)
         key = self.aes_obj.getKey(user_id=self.user_id, config_ini=config_ini)
         self.aes_obj.decrypt_file(key=key, path=path, path_=path_)
 

@@ -10,5 +10,6 @@ int main()
     func(res3);
 	int res4 = sum(-1,10);
     func(res4);
+	print();
 	return 0;
 }

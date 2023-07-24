@@ -480,7 +480,7 @@ def multiCallExpressCombiner(self, filepath):
 
 ## 文件缺失
 
-`clang.exe` 请自己去下载捏,然后放在`compile`目录下
+`clang.exe` 请自己去分支`test`里下载`clang.7z.001`并解压,然后放在`compile`目录下
 
 如果遇到`compile`出现问题，因为不是我负责的部分
 

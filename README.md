@@ -10,5 +10,5 @@
 
 ## 动图演示
 
-![666](https://picdl.sunbangyan.cn/2023/07/24/ixtoqj.gif)
+![666](666.gif)
 
